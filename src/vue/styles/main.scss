@@ -1,0 +1,158 @@
+@import "./game.scss";
+
+.v-app-bar {
+    position: relative;
+    -webkit-user-select: none;
+    -webkit-app-region: drag;
+
+    .v-btn {
+        -webkit-app-region: no-drag;
+        border-radius: 0;
+        height: 56px !important;
+    }
+
+    .v-app-bar__nav-icon {
+        min-width: 56px;
+    }
+
+    .v-navigation-drawer__border {
+        display: none;
+    }
+
+    .v-toolbar__content {
+        padding: 0;
+    }
+
+    .v-toolbar__title {
+        font-size: 0.8rem;
+        padding-left: 0.5rem !important;
+    }
+
+    .frame-buttons {
+        margin-left: auto;
+        white-space: nowrap;
+
+        > .v-btn {
+            min-width: 48px !important;
+            padding: 0;
+        }
+    }
+}
+
+.v-navigation-drawer {
+    max-height: 100vh !important;  // Fixes incorrect relative height as menu is contained inside app bar
+    
+    .v-list {
+        padding: 0;
+    }
+}
+
+body::-webkit-scrollbar {
+    display: none;
+}
+
+::-webkit-scrollbar {
+    width: 0.5rem;
+    height: 0.5rem;
+}
+  
+::-webkit-scrollbar-track {
+    display: none;
+}
+
+::-webkit-scrollbar-corner {
+    display: none;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #555;
+    border-radius: 1rem;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #444;
+}
+
+.message-overlay {
+    width: 300px;
+    height: 200px;
+    position: fixed !important;
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%);
+
+    .overlay-container {
+        display: flex;
+        flex-direction: column;
+    }
+}
+
+.huge-icon {
+    font-size: 5rem !important;
+}
+
+// Messes with icon centering inside text fields
+.v-input__slot {
+    margin: 0 !important;
+}
+
+.v-text-field__details {
+    display: none !important;
+}
+
+.settings-row {
+    .col {
+        position: relative;
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+    
+        p {
+            width: 100%;
+            margin-left: 1rem;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            padding-right: 1rem;
+            font-size: 0.8rem;
+        }
+    }
+
+    input {
+        text-align: center;
+        text-overflow: ellipsis;
+        margin: 0 0.5rem;
+    }
+
+    .v-text-field {
+        font-size: 0.8rem;
+    }
+}
+
+.dialog-input {
+    padding: 5px 20px;
+
+    input {
+        text-overflow: ellipsis;
+        margin-right: 2rem;
+    }
+}
+
+.main-container {
+    position: relative;
+    height: 100%;
+}
+
+.button-footer {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    display: flex;
+    flex-flow: row;
+    justify-content: center;
+
+    > * {
+        margin: 0.5rem 1.5rem;
+    }
+}

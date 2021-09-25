@@ -1,0 +1,99 @@
+.img-title {
+    position: absolute;
+    width: 100%;
+    height: 30%;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    white-space: nowrap;
+}
+
+.on-hover {
+    opacity: 0.5;
+}
+
+.game-main {
+    height: 100%;
+    position: relative;
+    // For some reason this makes the background image visible...
+    mask-image: linear-gradient(white, white);
+}
+
+.background-image {
+    position: absolute;
+    z-index: -1;
+    width: 100%;
+    min-height: 1rem;  // Fixes bug where image does not appear on lower zoom levels
+    // Does not seem possible to set length, so duplicate final color for faster transition
+    mask-image: linear-gradient(rgba(0,0,0,0.8), 50%, rgba(0,0,0,0), rgba(0,0,0,0));
+}
+
+.game-header {
+    h1 {
+        padding: 0.5rem 1.5rem;
+    }
+}
+
+.game-container {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: center;
+
+    .v-card {
+        margin: 0.5rem;
+        width: 400px;
+
+        > .v-img {
+            height: 200px;
+        }
+    }
+}
+
+#root-folder {
+    padding: 0.5rem 0;
+    border-radius: 0.5rem;
+    overflow: auto;
+    height: calc(100vh - 12rem);
+    max-width: calc(100vw - 2rem);
+    background: rgba(40, 40, 40, 0.85);
+}
+  
+.file-container {
+    padding: 0.15rem 0 0.15rem 0.75rem;
+  
+    > .v-btn {
+        padding: 0 0 0 0.5rem !important;
+        margin-right: 0.5rem;
+
+        &.selected {
+            background: gray !important;
+        }
+    }
+
+    .folder-content {
+        padding-top: 0.15rem;
+    }
+}
+
+.file-picker {
+    position: relative;
+
+    > .v-icon {
+        position: absolute !important;
+        top: calc(50%);
+        transform: translateY(-50%);
+        right: 1rem;
+    }
+}
+
+.context-menu {
+    width: 140px;
+    padding: 0;
+
+    .v-list-item {
+        min-height: 2.5rem;
+    }
+
+    .v-list-item__title {
+        font-size: 0.85rem;
+    }
+}

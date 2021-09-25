@@ -1,0 +1,52 @@
+{
+    "ds1": {
+        "title": "Dark Souls: Prepare to Die Edition",
+        "selected": {
+            "folder": null,
+            "file": null
+        },
+        "savefile": null,
+        "backups": null,
+        "img": "ds1.jpg"
+    },
+    "dsr": {
+        "title": "Dark Souls: Remastered",
+        "selected": {
+            "folder": null,
+            "file": null
+        },
+        "savefile": null,
+        "backups": null,
+        "img": "dsr.jpg"
+    },
+    "ds2": {
+        "title": "Dark Souls II",
+        "selected": {
+            "folder": null,
+            "file": null
+        },
+        "savefile": null,
+        "backups": null,
+        "img": "ds2.jpg"
+    },
+    "ds2sotfs": {
+        "title": "Dark Souls II: Scholar of the First Sin",
+        "selected": {
+            "folder": null,
+            "file": null
+        },
+        "savefile": null,
+        "backups": null,
+        "img": "ds2sotfs.jpg"
+    },
+    "ds3": {
+        "title": "Dark Souls III",
+        "selected": {
+            "folder": null,
+            "file": null
+        },
+        "savefile": null,
+        "backups": null,
+        "img": "ds3.jpg"
+    }
+}
