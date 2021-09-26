@@ -1,6 +1,11 @@
 <template>
   <div class="game-main">
+    <v-btn icon class="game-settings-btn" @click="editSettings">
+      <v-icon>mdi-cog</v-icon>
+    </v-btn>
+
     <v-img class="background-image" :src="images[game.img]" />
+
     <div class="game-header">
       <h1>{{ game.title }}</h1>
     </div>
@@ -24,7 +29,7 @@
 
 <script lang="ts">
 import { mapActions, mapState } from "vuex";
-import { invoke } from "@/vue/utils/ipcUtils";
+import { invoke, removeAllListeners } from "@/vue/utils/ipcUtils";
 import ConfirmDialog from "./ConfirmDialog.vue";
 import IconButton from "./IconButton.vue";
 import Folder from "./Folder.vue";
@@ -116,7 +121,7 @@ export default {
     }
   },
   destroyed(): void {
-    this.removeAllListeners();
+    removeAllListeners();
   }
 };
 </script>
