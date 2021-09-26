@@ -2,7 +2,7 @@
 import Vue from "vue";
 import File from "./File.vue";
 import { FileObject } from "@/common/files";
-import { ipcRenderer, invoke } from "@/vue/utils/ipcUtils";
+import { ipcRenderer, invoke, removeAllListeners } from "@/vue/utils/ipcUtils";
 
 // Uses Vue.extend so we can refer to the component type and load dynamically
 const Folder = Vue.extend({
@@ -88,7 +88,7 @@ const Folder = Vue.extend({
     },
     refreshListeners(): void {
       // TODO: Mixins does not allow calling super methods. Enforce inheritance some other way or wait for Vue 3 to mature?
-      this.removeAllListeners();
+      removeAllListeners();
       ipcRenderer.on("selectNext", () => this.selectNext());
       ipcRenderer.on("selectPrevious", () => this.selectPrevious());
       ipcRenderer.on("refreshSelected", this.refresh);

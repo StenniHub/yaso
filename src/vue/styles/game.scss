@@ -1,3 +1,18 @@
+.game-container {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: center;
+
+    .v-card {
+        margin: 0.5rem;
+        width: 400px;
+
+        > .v-img {
+            height: 200px;
+        }
+    }
+}
+
 .img-title {
     position: absolute;
     width: 100%;
@@ -12,8 +27,9 @@
 }
 
 .game-main {
-    height: 100%;
-    position: relative;
+    height: calc(100vh - 56px);
+    display: flex;
+    flex-flow: column;
     // For some reason this makes the background image visible...
     mask-image: linear-gradient(white, white);
 }
@@ -33,26 +49,12 @@
     }
 }
 
-.game-container {
-    display: flex;
-    flex-flow: row wrap;
-    justify-content: center;
-
-    .v-card {
-        margin: 0.5rem;
-        width: 400px;
-
-        > .v-img {
-            height: 200px;
-        }
-    }
-}
-
 #root-folder {
+    flex: 1 1 auto;
     padding: 0.5rem 0;
     border-radius: 0.5rem;
     overflow: auto;
-    height: calc(100vh - 12rem);
+    margin-bottom: 4rem;
     max-width: calc(100vw - 2rem);
     background: rgba(40, 40, 40, 0.85);
 }

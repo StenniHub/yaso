@@ -73,6 +73,10 @@ body::-webkit-scrollbar {
     background: #444;
 }
 
+a {
+    color: white !important;
+}
+
 .message-overlay {
     width: 300px;
     height: 200px;
@@ -141,6 +145,11 @@ body::-webkit-scrollbar {
 .main-container {
     position: relative;
     height: 100%;
+
+    > h4 {
+        text-align: center;
+        margin: 1rem;
+    }
 }
 
 .button-footer {
@@ -154,5 +163,27 @@ body::-webkit-scrollbar {
 
     > * {
         margin: 0.5rem 1.5rem;
+    }
+}
+
+.centered-container {
+    margin: 1rem;
+    display: flex;
+    flex-flow: row;
+    justify-content: center;
+}
+
+.about-grid {
+    display: grid;
+    grid-template-columns: auto auto;
+
+    .icon {
+        margin: 1rem;
+        display: flex;
+        justify-content: center;
+    }
+
+    > p, a {
+        margin: auto 1rem;
     }
 }

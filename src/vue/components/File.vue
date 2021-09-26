@@ -38,7 +38,7 @@ import Vue from "vue";
 import { mapState, mapActions } from "vuex";
 import ConfirmDialog from "./ConfirmDialog.vue";
 import { FileObject } from "@/common/files";
-import { ipcRenderer, invoke } from "@/vue/utils/ipcUtils";
+import { ipcRenderer, invoke, removeAllListeners } from "@/vue/utils/ipcUtils";
 import { scrollToElement } from "@/vue/utils/domUtils";
 import Folder from "./Folder.vue";
 
@@ -103,17 +103,10 @@ const File = Vue.extend({
       });
     },
     refreshListeners(): void {
-      this.removeAllListeners();
+      removeAllListeners();
       ipcRenderer.on("selectNext", () => this.selectNext());
       ipcRenderer.on("selectPrevious", () => this.selectPrevious());
-    },
-    removeAllListeners(): void {
-      // TODO: Improve this
-      // Removes all listeners for any external control flow, must include actions for both files and folders
-      ipcRenderer.removeAllListeners("selectNext");
-      ipcRenderer.removeAllListeners("selectPrevious");
-      ipcRenderer.removeAllListeners("refreshSelected");
-      ipcRenderer.removeAllListeners("toggleFolder");
+      ipcRenderer.on("refreshSelected", this.$parent.refresh);
     },
     scrollTo(): void {
       scrollToElement(document.getElementById("root-folder"), this.$refs.root.$el);
