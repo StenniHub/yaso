@@ -3,6 +3,8 @@
 ## What it do?
 Yet Another Save Organizer (<b>YASO</b>) uses Electron combined with Vue to provide the file management capabilities of other save organizer combined with the modern aesthetic of javascript single page applications.
 
+For a quick introduction in how to use YASO, check out: https://www.youtube.com/watch?v=IvxF6ud60qo 
+
 <p align="center">
     <img src="screenshots/main.jpg" height="400"/> &nbsp; &nbsp; <img src="screenshots/game_main.jpg" height="400"/>
 </p>
