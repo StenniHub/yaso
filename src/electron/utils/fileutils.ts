@@ -1,11 +1,11 @@
 import fs from "fs";
 import path from "path";
-import { window } from "../window";
 import { dialog } from "electron";
 import { homedir } from "os";
 import { FileObject } from "@/common/files";
 import trash from "trash";
 import { exec } from "child_process";
+import { sendSuccessMessage, sendErrorMessage } from "./messageUtils";
 
 declare const __static: string;
 
@@ -17,9 +17,9 @@ const notExists = (file: string) => !fs.existsSync(file);
 
 function onFileCopy(error: Error) {
   if (error != null) {
-    window.webContents.send("message", { message: "Error loading savefile", success: false });
+    sendErrorMessage("Error loading savefile");
   } else {
-    window.webContents.send("message", { message: "Savefile loaded", success: true });
+    sendSuccessMessage("Savefile loaded");
   }
 }
 
@@ -76,11 +76,20 @@ export function selectFolder(path: string): Promise<Electron.OpenDialogReturnVal
   return dialog.showOpenDialog({ defaultPath: path || undefined, properties: ["openDirectory"] });
 }
 
-export function loadSavefile(): void {
+function getSelectedGame() {
   const games = readConfig("games");
   const session = readConfig("session");
-  const game = games[session.game];
-  copyFile(game.selected.folder + "\\" + game.selected.file, game.savefile);
+  return games[session.game];
+}
+
+export function loadSavefile(): void {
+  const game = getSelectedGame();
+
+  if (isWritable(game.savefile)) {
+    copyFile(game.selected.folder + "\\" + game.selected.file, game.savefile);
+  } else {
+    sendErrorMessage("Savefile is read only");
+  }
 }
 
 export function createFolder(path: string): void {
@@ -97,4 +106,25 @@ export function remove(path: string): Promise<void> {
 
 export function revealInExplorer(path: string): void {
   exec('explorer /select,"' + path + '"');
+}
+
+function isWritable(filePath: string) {
+  try {
+    fs.accessSync(filePath, fs.constants.W_OK);
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
+export function toggleReadOnly(): void {
+  const game = getSelectedGame();
+
+  if (isWritable(game.savefile)) {
+    exec('attrib +r "' + game.savefile + '"');
+    sendSuccessMessage("Read only enabled");
+  } else {
+    exec('attrib -r "' + game.savefile + '"');
+    sendSuccessMessage("Read only disabled");
+  }
 }

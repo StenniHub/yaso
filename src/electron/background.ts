@@ -2,9 +2,10 @@
 
 import { app, protocol, Menu, MenuItem, ipcMain } from "electron";
 import installExtension, { VUEJS_DEVTOOLS } from "electron-devtools-installer";
-import { window, createWindow } from "./window"
-import * as keyUtils from "./utils/keyutils"
-import * as fileUtils from "./utils/fileutils"
+import { window, createWindow } from "./window";
+import * as keyUtils from "./utils/keyutils";
+import * as fileUtils from "./utils/fileutils";
+import * as messageUtils from "./utils/messageUtils";
 import iohook from "iohook";  // Note: iohook requires Visual C++ Redistributable
 
 const isDevelopment = process.env.NODE_ENV !== "production";
@@ -58,6 +59,19 @@ app.on("ready", async () => {
   createWindow();
   iohook.start(false);
   fileUtils.initFolders();
+
+  const session = fileUtils.readConfig("session");
+  if (session && session.windowSize) {
+    const sizes = session.windowSize.split("x");
+    const width = parseInt(sizes[0]);
+    const height = parseInt(sizes[1]);
+    window.setSize(width, height);
+  }
+
+  window.on('resize', function () {
+    const size = window.getSize();
+    messageUtils.saveWindowSize(size[0], size[1]);
+  });
 });
 
 
@@ -79,6 +93,7 @@ ipcMain.handle("bindKeys", (event: Event, action: string, keys: string) => keyUt
 ipcMain.handle("selectFile", (event: Event, path: string) => fileUtils.selectFile(path));
 ipcMain.handle("selectFolder", (event: Event, path: string) => fileUtils.selectFolder(path));
 ipcMain.handle("loadSavefile", (event: Event) => fileUtils.loadSavefile());
+ipcMain.handle("toggleReadOnly", (event: Event) => fileUtils.toggleReadOnly());
 ipcMain.handle("revealInExplorer", (event: Event, path: string) => fileUtils.revealInExplorer(path));
 
 ipcMain.handle("rename", (event: Event, fromPath: string, toPath: string) => fileUtils.rename(fromPath, toPath));

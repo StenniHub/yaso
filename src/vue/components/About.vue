@@ -1,6 +1,6 @@
 <template>
   <v-container fluid class="main-container">
-    <h4>Version {{appVersion}}</h4>
+    <h4>Version {{ appVersion }}</h4>
     <h4>Developed by Stennis</h4>
 
     <div class="centered-container">
@@ -25,10 +25,10 @@
 </template>
 
 <script lang="ts">
-import {version} from "@/../package.json";
+import { version } from "@/../package.json";
 
 export default {
-  data: () => ({
+  data: (): Record<string, unknown> => ({
     appVersion: version
   })
 }

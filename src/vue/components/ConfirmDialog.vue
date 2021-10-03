@@ -1,7 +1,10 @@
 <template>
   <v-dialog v-model="dialog" persistent>
     <v-card>
-      <v-card-title v-text="header" />
+      <v-card-title v-if="header" v-text="header" />
+
+      <v-card-text class="dialog-description" v-if="description" v-html="description" />
+
       <div class="dialog-input" v-for="([key, params]) in Object.entries(inputs)" :key="key">
         <v-text-field outlined v-if="params.type === 'text'" v-model="output[key]" :label="params.label" />
 
@@ -13,14 +16,8 @@
 
       <v-card-actions>
         <v-spacer />
-
-        <v-btn text v-if="cancellable" @click="cancel">
-          Cancel
-        </v-btn>
-
-        <v-btn text @click="confirm" :disabled="!isValid()">
-          Confirm
-        </v-btn>
+        <v-btn text v-if="cancellable" @click="cancel">{{ labels.cancel }}</v-btn>
+        <v-btn text @click="confirm" :disabled="!isValid()">{{ labels.confirm }}</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -33,9 +30,17 @@ import { selectFile, selectFolder } from "@/vue/utils/ipcUtils";
 export default {
   props: {
     header: String,
+    description: String,
+    labels: {
+      type: Object,
+      default: (): Record<string, string> => ({
+        cancel: "Cancel",
+        confirm: "Confirm"
+      })
+    },
     inputs: {
       type: Object,
-      default(): Record<string, unknown> { return {}; }
+      default: (): Record<string, unknown> => ({})
     },
     cancellable: {
       type: Boolean,

@@ -41,6 +41,10 @@ export default {
       {
         id: "toggleAlwaysOnTop",
         description: "Toggle always on top"
+      },
+      {
+        id: "toggleReadOnly",
+        description: "Toggle read only mode for game savefile"
       }
     ]
   }),

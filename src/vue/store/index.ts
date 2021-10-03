@@ -108,6 +108,9 @@ export default new Vuex.Store({
     saveGames({ state }) {
       invoke("saveConfig", "games", state.games);
     },
+    saveSession({ state }) {
+      invoke("saveConfig", "session", state.session);
+    },
     setSession({ commit }, { session, save}) {
       commit("setSession", session);
       if (save) invoke("saveConfig", "session", session);

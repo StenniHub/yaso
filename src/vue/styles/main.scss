@@ -1,9 +1,16 @@
 @import "./game.scss";
 
+.v-main {
+    padding-top: 56px !important;
+    max-height: 100%;
+    overflow: hidden;
+}
+
 .v-app-bar {
     position: relative;
     -webkit-user-select: none;
     -webkit-app-region: drag;
+    height: 56px !important;
 
     .v-btn {
         -webkit-app-region: no-drag;
@@ -15,12 +22,17 @@
         min-width: 56px;
     }
 
-    .v-navigation-drawer__border {
-        display: none;
+    .v-navigation-drawer {
+        top: 56px !important;
+
+        .v-navigation-drawer__border {
+            display: none;
+        }
     }
 
     .v-toolbar__content {
         padding: 0;
+        height: 56px !important;
     }
 
     .v-toolbar__title {
@@ -192,4 +204,10 @@ a {
     position: absolute;
     right: 1rem;
     top: 1rem;
+}
+
+.dialog-description {
+    p {
+        margin-bottom: 0;
+    }
 }

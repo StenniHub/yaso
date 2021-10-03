@@ -1,6 +1,6 @@
 "use strict";
 
-import { loadSavefile } from "./fileutils";
+import * as fileUtils from "./fileutils";
 import { window } from "../window";
 import {keycodes, reverseKeycodes} from "./keycodes";
 import iohook from "iohook";
@@ -12,11 +12,12 @@ const separator = " + ";
 const boundKeys = {};
 
 const actions = {
-  loadSavefile: loadSavefile,
+  loadSavefile: fileUtils.loadSavefile,
   selectNext: () => window.webContents.send("selectNext"),
   selectPrevious: () => window.webContents.send("selectPrevious"),
   toggleFolder: () => window.webContents.send("toggleFolder"),
-  toggleAlwaysOnTop: () => window.webContents.send("toggleAlwaysOnTop")
+  toggleAlwaysOnTop: () => window.webContents.send("toggleAlwaysOnTop"),
+  toggleReadOnly: fileUtils.toggleReadOnly
 };
 
 export function awaitKeys(): Promise<string> {
