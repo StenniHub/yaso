@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { dialog } from "electron";
+import { dialog, shell } from "electron";
 import { homedir } from "os";
 import { FileObject } from "@/common/files";
 import trash from "trash";
@@ -127,4 +127,9 @@ export function toggleReadOnly(): void {
     exec('attrib -r "' + game.savefile + '"');
     sendSuccessMessage("Read only disabled");
   }
+}
+
+export function openFile(path: string) {
+  const keybinds = readConfig("keybinds")
+  shell.openPath(keybinds.openFile.config.filePath)
 }

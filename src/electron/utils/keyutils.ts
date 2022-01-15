@@ -17,7 +17,8 @@ const actions = {
   selectPrevious: () => window.webContents.send("selectPrevious"),
   toggleFolder: () => window.webContents.send("toggleFolder"),
   toggleAlwaysOnTop: () => window.webContents.send("toggleAlwaysOnTop"),
-  toggleReadOnly: fileUtils.toggleReadOnly
+  toggleReadOnly: fileUtils.toggleReadOnly,
+  openFile: fileUtils.openFile
 };
 
 export function awaitKeys(): Promise<string> {
