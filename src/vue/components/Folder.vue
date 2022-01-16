@@ -40,6 +40,8 @@ const Folder = Vue.extend({
       this.selectFile({ folder: selectedPath, file: null });
       this.selectedFile = null;
       this.refreshListeners();
+
+      if (!this.isRoot) this.$parent.selectFileByName(this.name);
     },
     open(): void {
       this.isOpen = true;
@@ -87,10 +89,9 @@ const Folder = Vue.extend({
 
       const selectedIdx = files.indexOf(selectedFile);
       if (selectedIdx >= 1) {
-        const prevFile = files[selectedIdx - 1];
-        const prevElement = this.getFileElement(prevFile);
+        const prevElement = this.getFileElement(files[selectedIdx - 1]);
         if (prevElement.isOpen && prevElement.files.length > 0) prevElement.selectLast();
-        else this.selectFileElement(prevFile);
+        else prevElement.select(true);
         return;
       }
 
@@ -98,10 +99,9 @@ const Folder = Vue.extend({
       else this.select(true);
     },
     selectLast() {
-      const lastFile = this.files[this.files.length - 1];
-      const lastElement = this.getFileElement(lastFile);
+      const lastElement = this.getFileElement(this.files[this.files.length - 1]);
       if (lastElement.isOpen) lastElement.selectLast();
-      else this.selectFileElement(lastFile);
+      else lastElement.select(true);
     },
     async refresh(): Promise<unknown> {
       this.isOpen = true;
@@ -123,12 +123,12 @@ const Folder = Vue.extend({
       ipcRenderer.on("refreshSelected", this.refresh);
       ipcRenderer.on("toggleFolder", this.toggleFolder);
     },
+    getFileElement(file: FileObject) {
+      return this.$refs.file.find(element => element.name == file.name);
+    },
     selectFileElement(file: FileObject) {
       this.selectedFile = file;
       this.getFileElement(file).select(true);
-    },
-    getFileElement(file: FileObject) {
-      return this.$refs.file.find(element => element.name == file.name);
     },
     selectFileByName(name: string) {
       this.selectedFile = this.files.find(file => file.name == name);
