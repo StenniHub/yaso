@@ -11,7 +11,8 @@ const Folder = Vue.extend({
     isFolder: true,
     isOpen: false,
     isRoot: false,
-    files: []
+    files: [],
+    selectedFile: null
   }),
   methods: {
     getIcon(): string {
@@ -25,13 +26,22 @@ const Folder = Vue.extend({
       if (isSelected) this.refreshListeners();
       return isSelected;
     },
+    isFileSelected(file: FileObject): boolean {
+      return file.path == (this.game.selected.folder + "\\" + this.game.selected.file);
+    },
+    isFileOnSelectionPath(file: FileObject): boolean {
+      return (this.game.selected.folder + "\\").startsWith(file.path + "\\"); 
+    },
     select(keyEvent: boolean): void {
       if (keyEvent) this.scrollTo();
       else this.toggleFolder();
 
       const selectedPath = this.isSelected() && !this.isOpen ? null : this.path;
       this.selectFile({ folder: selectedPath, file: null });
+      this.selectedFile = null;
       this.refreshListeners();
+
+      if (!this.isRoot) this.$parent.selectFileByName(this.name);
     },
     open(): void {
       this.isOpen = true;
@@ -44,32 +54,44 @@ const Folder = Vue.extend({
       if (!this.isOpen) this.open();
       else if (this.isSelected()) this.close();
     },
-    selectNext(caller: File): void {
-      const files = this.$refs.file;
-      if (caller == null) {  // Called directly from hotkey
-        if (this.isOpen && files.length > 0) files[0].select(true);
-        else if (!this.isRoot) this.$parent.selectNext(this);
-        return;
-      }
-
-      const callerIdx = files.indexOf(caller);  // Called from child file
-      if (callerIdx + 1 < files.length) files[callerIdx + 1].select(true);
-      else if (this.isRoot) files[0].select(true);
-      else this.$parent.selectNext(this);
+    selectNextFromParent() {
+      this.selectedFile = null;
+      this.$parent.selectNext();
     },
-    selectPrevious(caller: File): void {
-      if (caller == null) {  // Called directly from hotkey
-        if (this.isRoot) this.selectLast();
-        else this.$parent.selectPrevious(this);
+    selectPreviousFromParent() {
+      this.selectedFile = null;
+      this.$parent.selectPrevious();
+    },
+    selectNext(): void {
+      const files = this.files;
+      const selectedFile = this.selectedFile;
+
+      if (selectedFile == null) {
+        if (this.isOpen && files.length > 0) this.selectFileElement(files[0]);
+        else if (!this.isRoot) this.selectNextFromParent();
         return;
       }
 
-      const files = this.$refs.file;
-      const callerIdx = files.indexOf(caller);    // Called from child file
-      if (callerIdx - 1 >= 0) {
-        const prev = files[callerIdx - 1];
-        if (prev.isOpen && prev.files.length > 0) prev.selectLast();
-        else prev.select(true);
+      const selectedIdx = files.indexOf(selectedFile);
+      if (selectedIdx < files.length - 1) this.selectFileElement(files[selectedIdx + 1])
+      else if (this.isRoot) this.selectFileElement(files[0])
+      else this.selectNextFromParent();
+    },
+    selectPrevious(): void {
+      const files = this.files;
+      const selectedFile = this.selectedFile;
+
+      if (selectedFile == null) {
+        if (this.isRoot) this.selectLast();
+        else this.selectPreviousFromParent();
+        return;
+      }
+
+      const selectedIdx = files.indexOf(selectedFile);
+      if (selectedIdx >= 1) {
+        const prevElement = this.getFileElement(files[selectedIdx - 1]);
+        if (prevElement.isOpen && prevElement.files.length > 0) prevElement.selectLast();
+        else prevElement.select(true);
         return;
       }
 
@@ -77,14 +99,21 @@ const Folder = Vue.extend({
       else this.select(true);
     },
     selectLast() {
-      const files = this.$refs.file;
-      const last = files[files.length - 1];
-      if (last.isOpen) last.selectLast();
-      else last.select(true);
+      const lastElement = this.getFileElement(this.files[this.files.length - 1]);
+      if (lastElement.isOpen) lastElement.selectLast();
+      else lastElement.select(true);
     },
     async refresh(): Promise<unknown> {
       this.isOpen = true;
-      return invoke("readDir", this.getPath()).then((files: FileObject[]) => this.files = files);
+      return invoke("readDir", this.getPath()).then((files: FileObject[]) => {
+        this.files = files;
+        for (const file of files) {
+          if (this.isFileSelected(file) || this.isFileOnSelectionPath(file)) {
+            this.selectedFile = file;
+            break;
+          }
+        }
+      });
     },
     refreshListeners(): void {
       // TODO: Mixins does not allow calling super methods. Enforce inheritance some other way or wait for Vue 3 to mature?
@@ -93,6 +122,17 @@ const Folder = Vue.extend({
       ipcRenderer.on("selectPrevious", () => this.selectPrevious());
       ipcRenderer.on("refreshSelected", this.refresh);
       ipcRenderer.on("toggleFolder", this.toggleFolder);
+    },
+    getFileElement(file: FileObject) {
+      return this.$refs.file.find(element => element.name == file.name);
+    },
+    selectFileElement(file: FileObject) {
+      this.selectedFile = file;
+      this.getFileElement(file).select(true);
+    },
+    selectFileByName(name: string) {
+      this.selectedFile = this.files.find(file => file.name == name);
+      if (!this.isRoot) this.$parent.selectFileByName(this.name);
     }
   },
   mounted(): void {

@@ -1,44 +1,51 @@
 <template>
   <v-hover v-slot="{ hover }" close-delay="100">
     <div>
-      <v-app-bar-nav-icon @click="forceOpen = !forceOpen"/>
+      <v-app-bar-nav-icon/>
 
-      <!-- Uses transition container + permanent + v-if (v-model does nothing when permanent) as clipped + app does not work properly together -->
       <v-expand-x-transition appear>
-        <v-navigation-drawer v-if="forceOpen || hover" app permanent clipped expand-on-hover>
+        <v-navigation-drawer v-if="hover" app permanent clipped mini-variant>
           <v-list dense>
-            <v-list-item link @click="$router.push('Games')">
-              <v-list-item-action>
-                <v-icon>mdi-controller-classic</v-icon>
-              </v-list-item-action>
-              <v-list-item-content>
-                <v-list-item-title>Games</v-list-item-title>
-              </v-list-item-content>
-            </v-list-item>
-            <v-list-item link @click="$router.push('Keybinds')">
-              <v-list-item-action>
-                <v-icon>mdi-keyboard</v-icon>
-              </v-list-item-action>
-              <v-list-item-content>
-                <v-list-item-title>Keybinds</v-list-item-title>
-              </v-list-item-content>
-            </v-list-item>
-            <v-list-item link @click="$router.push('Settings')">
-              <v-list-item-action>
-                <v-icon>mdi-cog</v-icon>
-              </v-list-item-action>
-              <v-list-item-content>
-                <v-list-item-title>Settings</v-list-item-title>
-              </v-list-item-content>
-            </v-list-item>
-            <v-list-item link @click="$router.push('About')">
-              <v-list-item-action>
-                <v-icon>mdi-information</v-icon>
-              </v-list-item-action>
-              <v-list-item-content>
-                <v-list-item-title>About</v-list-item-title>
-              </v-list-item-content>
-            </v-list-item>
+            <v-tooltip right>
+              <template v-slot:activator="{ on, attrs }">
+                <v-list-item link @click="$router.push('Games')" v-on="on" v-bind="attrs">
+                  <v-list-item-action>
+                    <v-icon>mdi-controller-classic</v-icon>
+                  </v-list-item-action>
+                </v-list-item>
+              </template>
+              <span>Games</span>
+            </v-tooltip>
+            <v-tooltip right>
+              <template v-slot:activator="{ on, attrs }">
+                <v-list-item link @click="$router.push('Keybinds')" v-on="on" v-bind="attrs">
+                  <v-list-item-action>
+                    <v-icon>mdi-keyboard</v-icon>
+                  </v-list-item-action>
+                </v-list-item>
+              </template>
+              <span>Keybinds</span>
+            </v-tooltip>
+            <v-tooltip right>
+              <template v-slot:activator="{ on, attrs }">
+                <v-list-item link @click="$router.push('Settings')" v-on="on" v-bind="attrs">
+                  <v-list-item-action>
+                    <v-icon>mdi-cog</v-icon>
+                  </v-list-item-action>
+                </v-list-item>
+              </template>
+              <span>Settings</span>
+            </v-tooltip>
+            <v-tooltip right>
+              <template v-slot:activator="{ on, attrs }">
+                <v-list-item link @click="$router.push('About')" v-on="on" v-bind="attrs">
+                  <v-list-item-action>
+                    <v-icon>mdi-information</v-icon>
+                  </v-list-item-action>
+                </v-list-item>
+              </template>
+              <span>About</span>
+            </v-tooltip>
           </v-list>
         </v-navigation-drawer>
       </v-expand-x-transition>
@@ -49,7 +56,7 @@
 <script lang="ts">
 export default {
   data: (): Record<string, unknown> => ({
-    forceOpen: false
+    mini: false
   })
 }
 </script>

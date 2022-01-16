@@ -8,12 +8,21 @@
 
 .v-app-bar {
     position: relative;
-    -webkit-user-select: none;
-    -webkit-app-region: drag;
     height: 56px !important;
 
+    .v-toolbar__title {
+        -webkit-user-select: none;
+        -webkit-app-region: drag;
+        height: 100%;
+        width: 100%;
+        margin-top: 8px;
+        padding-bottom: 8px;
+        display: flex;
+        flex-flow: column;
+        justify-content: center;
+    }
+
     .v-btn {
-        -webkit-app-region: no-drag;
         border-radius: 0;
         height: 56px !important;
     }
@@ -145,15 +154,6 @@ a {
     }
 }
 
-.dialog-input {
-    padding: 5px 20px;
-
-    input {
-        text-overflow: ellipsis;
-        margin-right: 2rem;
-    }
-}
-
 .main-container {
     position: relative;
     height: 100%;
@@ -206,8 +206,32 @@ a {
     top: 1rem;
 }
 
-.dialog-description {
-    p {
-        margin-bottom: 0;
+.dialog-card {
+    .v-card__title {
+        padding-bottom: 0 !important;
     }
+
+    .v-card__text {
+        margin-top: 1rem;
+        padding-bottom: 0 !important;
+
+        p {
+            margin-bottom: 0;
+        }
+    }
+
+    .v-card__actions {
+        margin-top: 0.5rem;
+    }
+    
+    .dialog-input {
+        padding: 1.5rem 20px 0;
+    
+        input {
+            text-overflow: ellipsis;
+            margin-right: 2rem;
+        }
+    }
+    
 }
+
