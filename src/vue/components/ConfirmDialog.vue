@@ -1,9 +1,9 @@
 <template>
   <v-dialog v-model="dialog" persistent>
-    <v-card>
+    <v-card class="dialog-card">
       <v-card-title v-if="header" v-text="header" />
 
-      <v-card-text class="dialog-description" v-if="description" v-html="description" />
+      <v-card-text v-if="description" v-html="description" />
 
       <div class="dialog-input" v-for="([key, params]) in Object.entries(inputs)" :key="key">
         <v-text-field outlined v-if="params.type === 'text'" v-model="output[key]" :label="params.label" />
