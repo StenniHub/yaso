@@ -76,6 +76,7 @@ const File = Vue.extend({
       if (isKeyEvent) this.scrollTo();
       if (this.isSelected()) this.selectFile({ folder: null, file: null });
       else this.selectFile({ folder: this.$parent.getPath(), file: this.name });
+      this.$parent.selectFileByName(this.name);
     },
     selectNext(): void {
       if (this.isSelected()) this.$parent.selectNext(this);
