@@ -129,7 +129,7 @@ export function toggleReadOnly(): void {
   }
 }
 
-export function openFile(path: string) {
+export function openFile(action: string): void {
   const keybinds = readConfig("keybinds")
-  shell.openPath(keybinds.openFile.config.filePath)
+  shell.openPath(keybinds[action].config.filePath)
 }

@@ -17,8 +17,7 @@ const actions = {
   selectPrevious: () => window.webContents.send("selectPrevious"),
   toggleFolder: () => window.webContents.send("toggleFolder"),
   toggleAlwaysOnTop: () => window.webContents.send("toggleAlwaysOnTop"),
-  toggleReadOnly: fileUtils.toggleReadOnly,
-  openFile: fileUtils.openFile
+  toggleReadOnly: fileUtils.toggleReadOnly
 };
 
 export function awaitKeys(): Promise<string> {
@@ -52,7 +51,11 @@ export function bind(action: string, keyString: string): boolean {
   let registered = false;
 
   try {
-    const id = iohook.registerShortcut(keys, actions[action]);
+    let actionFunc
+    if (action.includes("openFile")) actionFunc = () => fileUtils.openFile(action)
+    else actionFunc = actions[action]
+    
+    const id = iohook.registerShortcut(keys, actionFunc);
 
     if (id != null) {
       registered = true;
