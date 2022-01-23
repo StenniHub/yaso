@@ -1,7 +1,7 @@
 <template>
   <v-container fluid class="main-container">
     <v-row class="settings-row" v-for="action in actions" :key="action.id">
-      <template v-if="keybinds[action.id]">
+      <template>
         <v-col cols="8">
           <v-text-field outlined readonly clearable v-model="keybinds[action.id].keys" @click="bind(action.id)" @click:clear="unbind(action.id)" />
         </v-col>
@@ -27,9 +27,9 @@
 </template>
 
 <script lang="ts">
-import { mapActions, mapState } from "vuex";
 import { invoke, selectFile } from "@/vue/utils/ipcUtils";
 import { actions } from "@/common/actions";
+import { migrateKeybindFormat } from "@/common/migration";
 import Vue from "vue";
 
 function deselectElement() {
@@ -38,16 +38,16 @@ function deselectElement() {
 
 export default {
   data: (): Record<string, unknown> => ({
-    actions: actions
+    actions: actions,
+    keybinds: {}
   }),
-  computed: mapState({
-    keybinds: state => state["keybinds"]
-  }),
+  mounted(): void {
+    this.loadKeybinds();
+  },
   methods: {
-    ...mapActions(["bindKeys", "unbindKeys", "setKeybindConfig"]),
     bind(action: string): void {
       invoke("awaitKeys").then(keys => {
-        this.bindKeys({ action, keys });
+        this.bindKeys(action, keys);
         deselectElement()
       });
     },
@@ -60,10 +60,44 @@ export default {
       selectFile(config[key]).then(result => {
         if (result != null) {
           Vue.set(config, key, result);
-          this.setKeybindConfig({action, config})
+          this.saveKeybinds();
         }
       });
     },
+    bindKeys(action: string, keys: string): void {
+      invoke("bindKeys", action, keys).then(bound => {
+        const previousKeys = (this.keybinds[action] || {}).keys;
+        
+        if (bound) {
+          if (previousKeys) invoke("unbindKeys", previousKeys);
+          Vue.set(this.keybinds[action], "keys", keys);
+          this.saveKeybinds();
+        }
+      });
+    },
+    unbindKeys(action: string): void {
+      invoke("unbindKeys", this.keybinds[action].keys);
+      Vue.set(this.keybinds[action], "keys", null);
+      this.saveKeybinds();
+    },
+    async loadKeybinds(): Promise<unknown> {
+      return invoke("readConfig", "keybinds").then(keybinds => {
+        migrateKeybindFormat(keybinds);
+
+        actions.forEach(action => {
+          if (!(action.id in keybinds)) {
+            const keybind = { "keys": null };
+            if (action.config) keybind["config"] = action.config;
+            keybinds[action.id] = keybind;
+          }
+        });
+
+        this.keybinds = keybinds;
+      });
+    },
+    async saveKeybinds(): Promise<unknown> {
+      return invoke("saveConfig", "keybinds", this.keybinds);
+    }
   }
 };
 </script>

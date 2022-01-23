@@ -1,7 +1,6 @@
 import Vue from "vue";
 import Vuex from "vuex";
 import { invoke } from "@/vue/utils/ipcUtils";
-import { actions, actionsById } from "@/common/actions";
 
 Vue.use(Vuex);
 
@@ -10,7 +9,6 @@ export default new Vuex.Store({
     game: null,
     games: {},
     images: {},
-    keybinds: {},
     session: null
   },
   mutations: {
@@ -24,9 +22,6 @@ export default new Vuex.Store({
     setImage(state, { name, content }) {
       Vue.set(state.images, name, content);
     },
-    setKeybinds(state, keybinds: Record<string, unknown>) {
-      state.keybinds = keybinds;
-    },
     setSession(state, session: Record<string, unknown>) {
       state.session = session;
     },
@@ -36,14 +31,6 @@ export default new Vuex.Store({
     setSelected(state, { folder, file }) {
       state.game.selected.folder = folder;
       state.game.selected.file = file;
-    },
-    setKeybind(state, { action, keys }) {
-      const keybind = state.keybinds[action];
-      Vue.set(keybind, "keys", keys);
-    },
-    setKeybindConfig(state, { action, config }) {
-      const keybind = state.keybinds[action];
-      Vue.set(keybind, "config", config);
     },
     setSavefile(state, filepath: string) {
       state.game.savefile = filepath;
@@ -55,7 +42,6 @@ export default new Vuex.Store({
   actions: {
     async loadAll({ dispatch }) {
       dispatch("loadGames");
-      dispatch("loadKeybinds");
       dispatch("loadSession");
     },
     async loadGames({ commit }) {
@@ -67,29 +53,6 @@ export default new Vuex.Store({
             commit("setImage", { name: game["img"], content: "data:image/jpeg;base64," + content });
           });
         });
-      });
-    },
-    async loadKeybinds({ commit }) {
-      invoke("readConfig", "keybinds").then(keybinds => {
-        Object.entries(keybinds).forEach(async ([action, keybind]) => {
-          if (keybind == null || typeof(keybind) == "string") {
-            keybind = { "keys": keybind };
-            if (actionsById[action].config) keybind["config"] = actionsById[action].config;
-            keybinds[action] = keybind;
-          }
-
-          if (keybind["keys"] != null) invoke("bindKeys", action, keybind["keys"]);
-        });
-
-        actions.forEach(action => {
-          if (!(action.id in keybinds)) {
-            const keybind = { "keys": null };
-            if (action.config) keybind["config"] = action.config;
-            keybinds[action.id] = keybind;
-          }
-        });
-
-        commit("setKeybinds", keybinds);
       });
     },
     async loadSession({ dispatch }){
@@ -110,21 +73,6 @@ export default new Vuex.Store({
       invoke("saveConfig", "session", state.session);
       invoke("alwaysOnTop", state.session.alwaysOnTop);
     },
-    bindKeys({ state, commit }, { action, keys }) {
-      invoke("bindKeys", action, keys).then(bound => {
-        const previousKeys = (state.keybinds[action] || {}).keys;
-        if (bound) {
-          commit("setKeybind", { action, keys });
-          invoke("saveConfig", "keybinds", state.keybinds);
-
-          if (previousKeys) invoke("unbindKeys", previousKeys);
-        }
-      });
-    },
-    unbindKeys({ state, commit }, action: string) {
-      invoke("unbindKeys", state.keybinds[action].keys);
-      commit("setKeybind", { action, keys: null });
-    },
     saveGames({ state }) {
       invoke("saveConfig", "games", state.games);
     },
@@ -136,10 +84,6 @@ export default new Vuex.Store({
       if (save) invoke("saveConfig", "session", session);
       if (session.alwaysOnTop) invoke("alwaysOnTop", true);
       window.webFrame.setZoomFactor(session.zoom);
-    },
-    setKeybindConfig({ state, commit }, { action, config }) {
-      commit("setKeybindConfig", { action, config })
-      invoke("saveConfig", "keybinds", state.keybinds)
     }
   },
   modules: {}

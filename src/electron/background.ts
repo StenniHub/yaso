@@ -7,6 +7,7 @@ import * as keyUtils from "./utils/keyutils";
 import * as fileUtils from "./utils/fileutils";
 import * as messageUtils from "./utils/messageUtils";
 import iohook from "iohook";  // Note: iohook requires Visual C++ Redistributable
+import { migrateKeybindFormat } from "@/common/migration";
 
 const isDevelopment = process.env.NODE_ENV !== "production";
 
@@ -68,6 +69,13 @@ app.on("ready", async () => {
     window.setSize(width, height);
   }
 
+  // Activate all hotkeys
+  const keybinds = fileUtils.readConfig("keybinds");
+  migrateKeybindFormat(keybinds);  // Make sure format is up to date
+  Object.entries(keybinds).forEach(async ([action, keybind]) => {
+    if (keybind["keys"] != null) keyUtils.bind(action, keybind["keys"]);
+  })
+
   window.on('resize', function () {
     const size = window.getSize();
     messageUtils.saveWindowSize(size[0], size[1]);
@@ -82,26 +90,26 @@ ipcMain.handle("createFolder", (event: Event, path: string) => fileUtils.createF
 ipcMain.handle("copyFile", (event: Event, from: string, to:string) => fileUtils.copyFile(from, to));
 
 ipcMain.handle("readConfig", (event: Event, filename: string) => fileUtils.readConfig(filename));
-ipcMain.handle("saveConfig", (event: Event, filename: string, content: Record<string, any>) => {
+ipcMain.handle("saveConfig", (event: Event, filename: string, content: Record<string, unknown>) => {
   fileUtils.saveConfig(filename, content);
 });
 
-ipcMain.handle("awaitKeys", (event: Event) => keyUtils.awaitKeys());
+ipcMain.handle("awaitKeys", () => keyUtils.awaitKeys());
 ipcMain.handle("unbindKeys", (event: Event, keys: string) => keyUtils.unbind(keys));
 ipcMain.handle("bindKeys", (event: Event, action: string, keys: string) => keyUtils.bind(action, keys));
 
 ipcMain.handle("selectFile", (event: Event, path: string) => fileUtils.selectFile(path));
 ipcMain.handle("selectFolder", (event: Event, path: string) => fileUtils.selectFolder(path));
-ipcMain.handle("loadSavefile", (event: Event) => fileUtils.loadSavefile());
-ipcMain.handle("toggleReadOnly", (event: Event) => fileUtils.toggleReadOnly());
+ipcMain.handle("loadSavefile", () => fileUtils.loadSavefile());
+ipcMain.handle("toggleReadOnly", () => fileUtils.toggleReadOnly());
 ipcMain.handle("revealInExplorer", (event: Event, path: string) => fileUtils.revealInExplorer(path));
 
 ipcMain.handle("rename", (event: Event, fromPath: string, toPath: string) => fileUtils.rename(fromPath, toPath));
 ipcMain.handle("remove", (event: Event, path: string) => fileUtils.remove(path));
-ipcMain.handle("refreshSelected", (event: Event) => window.webContents.send("refreshSelected"));
+ipcMain.handle("refreshSelected", () => window.webContents.send("refreshSelected"));
 
-ipcMain.handle("minimizeWindow", (event: Event) => window.minimize());
-ipcMain.handle("closeWindow", (event: Event) => window.close());
+ipcMain.handle("minimizeWindow", () => window.minimize());
+ipcMain.handle("closeWindow", () => window.close());
 ipcMain.handle("alwaysOnTop", (event: Event, enabled: boolean) => {
   window.setAlwaysOnTop(enabled, "pop-up-menu");
   window.setOpacity(enabled ? 0.8 : 1.0);  // TODO: Make opacity user configurable
