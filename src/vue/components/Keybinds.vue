@@ -1,19 +1,19 @@
 <template>
   <v-container fluid class="main-container">
-    <v-row class="settings-row" v-for="action in actions" :key="action.id">
+    <v-row class="settings-row" v-for="keybind in keybinds" :key="keybind.keys">
       <template>
         <v-col cols="8">
-          <v-text-field outlined readonly clearable v-model="keybinds[action.id].keys" @click="bind(action.id)" @click:clear="unbind(action.id)" />
+          <v-text-field outlined readonly clearable v-model="keybind.keys" @click="bind(keybind)" @click:clear="unbind(keybind)" />
         </v-col>
         <v-col cols="4">
-          <p>{{ action.description }}</p>
+          <p>{{ actions[keybind.action].description }}</p>
         </v-col>
 
-        <template v-if="keybinds[action.id].config != null">
-          <div v-for="param in Object.keys(keybinds[action.id].config)" :key="param" style="width: 100%; display: flex;">
+        <template v-if="keybind.config != null">
+          <div v-for="param in Object.keys(keybind.config)" :key="param" style="width: 100%; display: flex;">
             <template v-if="param == 'filePath'">
               <v-col cols="8">
-                <v-text-field outlined readonly v-model="keybinds[action.id].config[param]" @click="selectFile(action.id, param)" />
+                <v-text-field outlined readonly v-model="keybind.config[param]" @click="selectFile(keybind, param)" />
               </v-col>
               <v-col cols="4">
                 <p>File to open</p>
@@ -28,9 +28,8 @@
 
 <script lang="ts">
 import { invoke, selectFile } from "@/vue/utils/ipcUtils";
-import { actions } from "@/common/actions";
+import { actionsById } from "@/common/actions";
 import { migrateKeybindFormat } from "@/common/migration";
-import Vue from "vue";
 
 function deselectElement() {
   if (document.activeElement instanceof HTMLElement) (document.activeElement as HTMLElement).blur();
@@ -38,61 +37,53 @@ function deselectElement() {
 
 export default {
   data: (): Record<string, unknown> => ({
-    actions: actions,
-    keybinds: {}
+    actions: actionsById,
+    keybinds: []
   }),
   mounted(): void {
     this.loadKeybinds();
   },
   methods: {
-    bind(action: string): void {
+    bind(keybind: Record<string, unknown>): void {
       invoke("awaitKeys").then(keys => {
-        this.bindKeys(action, keys);
+        this.bindKeys(keybind, keys);
         deselectElement()
       });
     },
-    unbind(action: string): void {
-      this.unbindKeys(action);
+    unbind(keybind: Record<string, unknown>): void {
+      this.unbindKeys(keybind);
       setTimeout(deselectElement, 0);
     },
-    selectFile(action: string, key: string): void {
-      const config = this.keybinds[action].config
+    selectFile(keybind: Record<string, unknown>, key: string): void {
+      const config = keybind.config
       selectFile(config[key]).then(result => {
         if (result != null) {
-          Vue.set(config, key, result);
+          config[key] = result;
           this.saveKeybinds();
         }
       });
     },
-    bindKeys(action: string, keys: string): void {
-      invoke("bindKeys", action, keys).then(bound => {
-        const previousKeys = (this.keybinds[action] || {}).keys;
-        
+    bindKeys(keybind: Record<string, unknown>, keys: string): void {
+      const previousKeys = keybind.keys;
+      keybind.keys = keys;
+
+      invoke("bindKeys", keybind).then(bound => {
         if (bound) {
           if (previousKeys) invoke("unbindKeys", previousKeys);
-          Vue.set(this.keybinds[action], "keys", keys);
           this.saveKeybinds();
+        } else {
+          keybind.keys = previousKeys;
         }
       });
     },
-    unbindKeys(action: string): void {
-      invoke("unbindKeys", this.keybinds[action].keys);
-      Vue.set(this.keybinds[action], "keys", null);
+    unbindKeys(keybind: Record<string, unknown>): void {
+      invoke("unbindKeys", keybind.keys);
+      keybind.keys = null;
       this.saveKeybinds();
     },
     async loadKeybinds(): Promise<unknown> {
       return invoke("readConfig", "keybinds").then(keybinds => {
-        migrateKeybindFormat(keybinds);
-
-        actions.forEach(action => {
-          if (!(action.id in keybinds)) {
-            const keybind = { "keys": null };
-            if (action.config) keybind["config"] = action.config;
-            keybinds[action.id] = keybind;
-          }
-        });
-
-        this.keybinds = keybinds;
+        this.keybinds = migrateKeybindFormat(keybinds);
       });
     },
     async saveKeybinds(): Promise<unknown> {

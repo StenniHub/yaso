@@ -1,11 +1,23 @@
 import { actionsById } from "@/common/actions";
 
-export function migrateKeybindFormat(keybinds: Record<string, unknown>): void {
+export function migrateKeybindFormat(keybinds: any): Array<unknown> {
+  if (keybinds.length) return keybinds;  // Return if already in list format
+
+  const keybindList = [];
   Object.entries(keybinds).forEach(async ([action, keybind]) => {
+    // Converts from string format to object format
     if (keybind == null || typeof(keybind) == "string") {
       keybind = { "keys": keybind };
-      if (actionsById[action].config) keybind["config"] = actionsById[action].config;
+      const actionConfig = actionsById[action].config;
+      if (actionConfig) keybind["config"] = actionConfig;
       keybinds[action] = keybind;
     }
+
+    // Converts from object format to list format
+    if (action.includes("openFile")) action = "openFile";
+    keybind["action"] = action;
+    keybindList.push(keybind);
   });
+
+  return keybindList;
 }

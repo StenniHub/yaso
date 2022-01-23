@@ -70,10 +70,9 @@ app.on("ready", async () => {
   }
 
   // Activate all hotkeys
-  const keybinds = fileUtils.readConfig("keybinds");
-  migrateKeybindFormat(keybinds);  // Make sure format is up to date
-  Object.entries(keybinds).forEach(async ([action, keybind]) => {
-    if (keybind["keys"] != null) keyUtils.bind(action, keybind["keys"]);
+  const keybinds = migrateKeybindFormat(fileUtils.readConfig("keybinds"));  // Make sure format is up to date
+  keybinds.forEach(async keybind => {
+    if (keybind["keys"] != null) keyUtils.bind(keybind);
   })
 
   window.on('resize', function () {
@@ -90,13 +89,11 @@ ipcMain.handle("createFolder", (event: Event, path: string) => fileUtils.createF
 ipcMain.handle("copyFile", (event: Event, from: string, to:string) => fileUtils.copyFile(from, to));
 
 ipcMain.handle("readConfig", (event: Event, filename: string) => fileUtils.readConfig(filename));
-ipcMain.handle("saveConfig", (event: Event, filename: string, content: Record<string, unknown>) => {
-  fileUtils.saveConfig(filename, content);
-});
+ipcMain.handle("saveConfig", (event: Event, filename: string, content: Record<string, unknown>) => fileUtils.saveConfig(filename, content));
 
 ipcMain.handle("awaitKeys", () => keyUtils.awaitKeys());
 ipcMain.handle("unbindKeys", (event: Event, keys: string) => keyUtils.unbind(keys));
-ipcMain.handle("bindKeys", (event: Event, action: string, keys: string) => keyUtils.bind(action, keys));
+ipcMain.handle("bindKeys", (event: Event, keybind: Record<string, unknown>) => keyUtils.bind(keybind));
 
 ipcMain.handle("selectFile", (event: Event, path: string) => fileUtils.selectFile(path));
 ipcMain.handle("selectFolder", (event: Event, path: string) => fileUtils.selectFolder(path));

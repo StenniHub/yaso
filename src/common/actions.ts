@@ -31,35 +31,7 @@ export const actions = [
   },
   {
     id: "openFile",
-    description: "Open a file (1)",
-    config: {
-      filePath: null
-    }
-  },
-  {
-    id: "openFile2",
-    description: "Open a file (2)",
-    config: {
-      filePath: null
-    }
-  },
-  {
-    id: "openFile3",
-    description: "Open a file (3)",
-    config: {
-      filePath: null
-    }
-  },
-  {
-    id: "openFile4",
-    description: "Open a file (4)",
-    config: {
-      filePath: null
-    }
-  },
-  {
-    id: "openFile5",
-    description: "Open a file (5)",
+    description: "Open a file",
     config: {
       filePath: null
     }

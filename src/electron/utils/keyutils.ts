@@ -44,7 +44,10 @@ export function unbind(keyString: string): void {
   console.log("Unregistered: ", keyString);
 }
 
-export function bind(action: string, keyString: string): boolean {
+export function bind(keybind: Record<string, any>): boolean {
+  const keyString = keybind["keys"];
+  const action = keybind["action"];
+
   if (boundKeys[keyString] != null) return false;
 
   const keys = keyString.split(separator).map(name => reverseKeycodes[name]);
@@ -52,8 +55,8 @@ export function bind(action: string, keyString: string): boolean {
 
   try {
     let actionFunc
-    if (action.includes("openFile")) actionFunc = () => fileUtils.openFile(action)
-    else actionFunc = actions[action]
+    if (action.includes("openFile")) actionFunc = () => fileUtils.openFile(keybind.config.filePath);
+    else actionFunc = actions[action];
     
     const id = iohook.registerShortcut(keys, actionFunc);
 
