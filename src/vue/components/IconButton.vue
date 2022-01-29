@@ -1,7 +1,7 @@
 <template>
-  <v-tooltip top>
+  <v-tooltip v-bind="{[tipPos]: true}">
     <template v-slot:activator="{ on }">
-      <v-btn x-large icon @click="click" :disabled="disabled" v-on="on">
+      <v-btn v-bind="{[size]: true}" icon @click="click" :disabled="disabled" v-on="on">
         <v-icon>{{ icon }}</v-icon>
       </v-btn>
     </template>
@@ -15,7 +15,15 @@ export default {
     icon: String,
     onClick: Function,
     disabled: Boolean,
-    tooltip: String
+    size: {
+      type: String,
+      default: 'x-large'
+    },
+    tooltip: String,
+    tipPos: {
+      type: String,
+      default: 'top'
+    }
   },
   methods: {
     click(): void {

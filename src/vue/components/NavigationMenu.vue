@@ -4,48 +4,12 @@
       <v-app-bar-nav-icon/>
 
       <v-expand-x-transition appear>
-        <v-navigation-drawer v-if="hover" app permanent clipped mini-variant>
+        <v-navigation-drawer class="app-drawer" v-if="hover" app permanent clipped mini-variant>
           <v-list dense>
-            <v-tooltip right>
-              <template v-slot:activator="{ on, attrs }">
-                <v-list-item link @click="$router.push('Games')" v-on="on" v-bind="attrs">
-                  <v-list-item-action>
-                    <v-icon>mdi-controller-classic</v-icon>
-                  </v-list-item-action>
-                </v-list-item>
-              </template>
-              <span>Games</span>
-            </v-tooltip>
-            <v-tooltip right>
-              <template v-slot:activator="{ on, attrs }">
-                <v-list-item link @click="$router.push('Keybinds')" v-on="on" v-bind="attrs">
-                  <v-list-item-action>
-                    <v-icon>mdi-keyboard</v-icon>
-                  </v-list-item-action>
-                </v-list-item>
-              </template>
-              <span>Keybinds</span>
-            </v-tooltip>
-            <v-tooltip right>
-              <template v-slot:activator="{ on, attrs }">
-                <v-list-item link @click="$router.push('Settings')" v-on="on" v-bind="attrs">
-                  <v-list-item-action>
-                    <v-icon>mdi-cog</v-icon>
-                  </v-list-item-action>
-                </v-list-item>
-              </template>
-              <span>Settings</span>
-            </v-tooltip>
-            <v-tooltip right>
-              <template v-slot:activator="{ on, attrs }">
-                <v-list-item link @click="$router.push('About')" v-on="on" v-bind="attrs">
-                  <v-list-item-action>
-                    <v-icon>mdi-information</v-icon>
-                  </v-list-item-action>
-                </v-list-item>
-              </template>
-              <span>About</span>
-            </v-tooltip>
+            <icon-button icon="mdi-controller-classic" :onClick="() => $router.push('Games')" tooltip="Games" v-bind="commonProps" />
+            <icon-button icon="mdi-keyboard" :onClick="() => $router.push('Keybinds')" tooltip="Keybinds" v-bind="commonProps" />
+            <icon-button icon="mdi-cog" :onClick="() => $router.push('Settings')" tooltip="Settings" v-bind="commonProps" />
+            <icon-button icon="mdi-information" :onClick="() => $router.push('About')" tooltip="About" v-bind="commonProps" />
           </v-list>
         </v-navigation-drawer>
       </v-expand-x-transition>
@@ -54,9 +18,12 @@
 </template>
 
 <script lang="ts">
+import IconButton from "./IconButton.vue";
+
 export default {
+  components: { IconButton },
   data: (): Record<string, unknown> => ({
-    mini: false
+    commonProps: {size: 'large', tipPos: 'right'}
   })
 }
 </script>
