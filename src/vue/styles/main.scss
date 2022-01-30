@@ -131,6 +131,13 @@ a {
         display: flex;
         flex-direction: row;
         justify-content: center;
+        align-items: center;
+
+        .icon-button {
+            position: absolute;
+            right: 1.25rem;
+            z-index: 1;
+        }
     
         p {
             width: 100%;
@@ -146,7 +153,7 @@ a {
     input {
         text-align: center;
         text-overflow: ellipsis;
-        margin: 0 0.5rem;
+        margin: 0 1.5rem;
     }
 
     .v-text-field {
@@ -232,6 +239,28 @@ a {
             margin-right: 2rem;
         }
     }
+
+    .delete-button {
+        position: absolute;
     
+        .v-btn {
+            background: #C00C;
+            border-radius: 4px;
+            width: 8rem;
+        }
+    }
 }
 
+.app-drawer {
+    .v-btn {
+        width: 100%;
+    }
+}
+
+.keybinds-add {
+    .v-btn {
+        width: 100%;
+        border-radius: 4px;
+        border: solid 1px #555;
+    }
+}

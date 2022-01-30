@@ -38,31 +38,40 @@ export function awaitKeys(): Promise<string> {
 }
 
 // Unregister does not return a value, but if unregister did not work then register likely did not work either
-export function unbind(keyString: string): void {
-  iohook.unregisterShortcut(boundKeys[keyString]);
-  delete boundKeys[keyString];
-  console.log("Unregistered: ", keyString);
+export function unbind(keys: string): void {
+  iohook.unregisterShortcut(boundKeys[keys]);
+  delete boundKeys[keys];
+  console.log("Unregistered: ", keys);
 }
 
-export function bind(action: string, keyString: string): boolean {
-  if (boundKeys[keyString] != null) return false;
+export function bind(keybind: Record<string, any>): boolean {
+  const keys = keybind["keys"];
+  const action = keybind["action"];
 
-  const keys = keyString.split(separator).map(name => reverseKeycodes[name]);
+  if (boundKeys[keys] != null) {
+    unbind(keys);  // Collision detection is handled by Vue now
+  }
+
+  const keyList = keys.split(separator).map(name => reverseKeycodes[name]);
   let registered = false;
 
   try {
-    const id = iohook.registerShortcut(keys, actions[action]);
+    let actionFunc
+    if (action.includes("openFile")) actionFunc = () => fileUtils.openFile(keybind.config.filePath);
+    else actionFunc = actions[action];
+    
+    const id = iohook.registerShortcut(keyList, actionFunc);
 
     if (id != null) {
       registered = true;
-      boundKeys[keyString] = id;
-      console.log("Registered: ", keyString);
+      boundKeys[keys] = id;
+      console.log("Registered: ", keys);
     } else {
-      window.webContents.send("message", { message: "Keybind already registered: " + keys, success: false });
+      window.webContents.send("message", { message: "Keybind already registered: " + keyList, success: false });
     }
   } catch (e) {
     console.log(e);
-    window.webContents.send("message", { message: "Could not register keybind: " + keys, success: false });
+    window.webContents.send("message", { message: "Could not register keybind: " + keyList, success: false });
   }
 
   return registered;

@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="dialog" persistent>
+  <v-dialog v-model="dialog" persistent v-if="inputs">
     <v-card class="dialog-card">
       <v-card-title v-if="header" v-text="header" />
 
@@ -15,6 +15,7 @@
       </div>
 
       <v-card-actions>
+        <icon-button v-if="remove" class="delete-button" icon="mdi-delete" size="medium" :onClick="onRemove" :tooltip="remove.label" />
         <v-spacer />
         <v-btn text v-if="cancellable" @click="cancel">{{ labels.cancel }}</v-btn>
         <v-btn text @click="confirm" :disabled="!isValid()">{{ labels.confirm }}</v-btn>
@@ -26,11 +27,14 @@
 <script lang="ts">
 import Vue from "vue";
 import { selectFile, selectFolder } from "@/vue/utils/ipcUtils";
+import IconButton from './IconButton.vue';
 
 export default {
+  components: { IconButton },
   props: {
     header: String,
     description: String,
+    remove: Object,
     labels: {
       type: Object,
       default: (): Record<string, string> => ({
@@ -45,7 +49,7 @@ export default {
     cancellable: {
       type: Boolean,
       default: true
-    },
+    }
   },
   data: (): Record<string, unknown> => ({
     dialog: false,
@@ -55,9 +59,11 @@ export default {
   }),
   methods: {
     open(): Promise<unknown> {
-      Object.entries(this.inputs).forEach(([key, params]) => {
-        this.setNonNull(key, params["default"]);
-      });
+      if (this.inputs) {
+        Object.entries(this.inputs).forEach(([key, params]) => {
+          this.setNonNull(key, params["default"]);
+        });
+      }
       
       this.dialog = true;
       return new Promise((resolve, reject) => {
@@ -78,7 +84,12 @@ export default {
       this.dialog = false;
     },
     isValid(): boolean {
-      return Object.entries(this.inputs).every(([key, params]) => params["optional"] || this.output[key] != null);
+      if (!this.inputs) return false;
+      
+      return Object.entries(this.inputs).every(([key, params]) => {
+        if (key == 'remove') return true;
+        return params["optional"] || this.output[key] != null
+      });
     },
     setNonNull(key:string, value:unknown): void {
       if (value != null) Vue.set(this.output, key, value);
@@ -88,6 +99,10 @@ export default {
     },
     selectFolder(key: string): void {
       selectFolder(this.output[key]).then(result => this.setNonNull(key, result));
+    },
+    onRemove(): void {
+      this.remove.func();
+      this.cancel();
     }
   },
   provide(): Record<string, unknown> {

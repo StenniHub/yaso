@@ -9,7 +9,6 @@ export default new Vuex.Store({
     game: null,
     games: {},
     images: {},
-    keybinds: {},
     session: null
   },
   mutations: {
@@ -23,9 +22,6 @@ export default new Vuex.Store({
     setImage(state, { name, content }) {
       Vue.set(state.images, name, content);
     },
-    setKeybinds(state, keybinds: Record<string, unknown>) {
-      state.keybinds = keybinds;
-    },
     setSession(state, session: Record<string, unknown>) {
       state.session = session;
     },
@@ -35,9 +31,6 @@ export default new Vuex.Store({
     setSelected(state, { folder, file }) {
       state.game.selected.folder = folder;
       state.game.selected.file = file;
-    },
-    setKeybind(state, { action, keys }) {
-      Vue.set(state.keybinds, action, keys);
     },
     setSavefile(state, filepath: string) {
       state.game.savefile = filepath;
@@ -49,7 +42,6 @@ export default new Vuex.Store({
   actions: {
     async loadAll({ dispatch }) {
       dispatch("loadGames");
-      dispatch("loadKeybinds");
       dispatch("loadSession");
     },
     async loadGames({ commit }) {
@@ -60,15 +52,6 @@ export default new Vuex.Store({
           invoke("readImage", game["img"]).then(content => {
             commit("setImage", { name: game["img"], content: "data:image/jpeg;base64," + content });
           });
-        });
-      });
-    },
-    async loadKeybinds({ commit }) {
-      invoke("readConfig", "keybinds").then(keybinds => {
-        commit("setKeybinds", keybinds);
-
-        Object.entries(keybinds).forEach(async ([action, keys]) => {
-          if (keys != null) invoke("bindKeys", action, keys);
         });
       });
     },
@@ -90,28 +73,13 @@ export default new Vuex.Store({
       invoke("saveConfig", "session", state.session);
       invoke("alwaysOnTop", state.session.alwaysOnTop);
     },
-    bindKeys({ state, commit }, { action, keys }) {
-      invoke("bindKeys", action, keys).then(bound => {
-        const previousKeys = state.keybinds[action];
-        if (bound) {
-          commit("setKeybind", { action, keys });
-          invoke("saveConfig", "keybinds", state.keybinds);
-
-          if (previousKeys) invoke("unbindKeys", previousKeys);
-        }
-      });
-    },
-    unbindKeys({ state, commit }, action: string) {
-      invoke("unbindKeys", state.keybinds[action]);
-      commit("setKeybind", { action, keys: null });
-    },
     saveGames({ state }) {
       invoke("saveConfig", "games", state.games);
     },
     saveSession({ state }) {
       invoke("saveConfig", "session", state.session);
     },
-    setSession({ commit }, { session, save}) {
+    setSession({ commit }, { session, save }) {
       commit("setSession", session);
       if (save) invoke("saveConfig", "session", session);
       if (session.alwaysOnTop) invoke("alwaysOnTop", true);

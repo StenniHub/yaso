@@ -21,8 +21,8 @@
     </div>
 
     <!-- v-for causes ref to return an array, this will be changed in vue 3 -->
-    <div v-for="([ref, params]) in Object.entries(dialogs)" :key="ref">
-      <confirm-dialog :ref="ref" :header="params.header" :inputs="params.inputs" />
+    <div v-for="([id, params]) in Object.entries(dialogs)" :key="id">
+      <confirm-dialog :ref="id" :header="params.header" :inputs="params.inputs" />
     </div>
   </div>
 </template>
