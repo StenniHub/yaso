@@ -49,7 +49,7 @@ export function bind(keybind: Record<string, any>): boolean {
   const action = keybind["action"];
 
   if (boundKeys[keys] != null) {
-    unbind(keys);  // TODO: Not sure how we should handle this, but we need to rebind keys if config is changed
+    unbind(keys);  // Collision detection is handled by Vue now
   }
 
   const keyList = keys.split(separator).map(name => reverseKeycodes[name]);

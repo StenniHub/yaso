@@ -12,11 +12,10 @@
           <v-text-field outlined :label="params.label" v-model="output[key]" />
           <v-icon @click="params.type === 'file' ? selectFile(key) : selectFolder(key)">mdi-folder</v-icon>
         </div>
-
-        <icon-button v-if="params.type == 'remove'" icon="mdi-delete" class="delete-button" :onClick="remove" />
       </div>
 
       <v-card-actions>
+        <icon-button v-if="remove" class="delete-button" icon="mdi-delete" size="medium" :onClick="onRemove" :tooltip="remove.label" />
         <v-spacer />
         <v-btn text v-if="cancellable" @click="cancel">{{ labels.cancel }}</v-btn>
         <v-btn text @click="confirm" :disabled="!isValid()">{{ labels.confirm }}</v-btn>
@@ -35,6 +34,7 @@ export default {
   props: {
     header: String,
     description: String,
+    remove: Object,
     labels: {
       type: Object,
       default: (): Record<string, string> => ({
@@ -49,7 +49,7 @@ export default {
     cancellable: {
       type: Boolean,
       default: true
-    },
+    }
   },
   data: (): Record<string, unknown> => ({
     dialog: false,
@@ -100,8 +100,8 @@ export default {
     selectFolder(key: string): void {
       selectFolder(this.output[key]).then(result => this.setNonNull(key, result));
     },
-    remove(): void {
-      this.inputs.remove.func();
+    onRemove(): void {
+      this.remove.func();
       this.cancel();
     }
   },

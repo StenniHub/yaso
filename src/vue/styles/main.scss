@@ -239,7 +239,16 @@ a {
             margin-right: 2rem;
         }
     }
+
+    .delete-button {
+        position: absolute;
     
+        .v-btn {
+            background: #C00C;
+            border-radius: 4px;
+            width: 8rem;
+        }
+    }
 }
 
 .app-drawer {
@@ -253,13 +262,5 @@ a {
         width: 100%;
         border-radius: 4px;
         border: solid 1px #555;
-    }
-}
-
-.delete-button {
-    .v-btn {
-        background: #B00;
-        border-radius: 4px;
-        width: 100%;
     }
 }

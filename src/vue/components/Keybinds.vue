@@ -14,7 +14,7 @@
     </v-row>
     <v-row class="keybinds-add">
       <v-col cols="8">
-        <v-menu offset-y>
+        <v-menu offset-y max-height="15rem">
           <template v-slot:activator="{ on }">
             <icon-button icon="mdi-plus" tooltip="Add new hotkey" :on="on" />
           </template>
@@ -27,7 +27,7 @@
       </v-col>
     </v-row>
     
-    <confirm-dialog ref="configDialog" :inputs="configInputs" />
+    <confirm-dialog ref="configDialog" :inputs="dialog.inputs" :remove="dialog.remove" />
   </v-container>
 </template>
 
@@ -49,7 +49,7 @@ export default {
     actions: actions,
     actionsById: actionsById,
     keybinds: [],
-    configInputs: {}
+    dialog: {}
   }),
   mounted(): void {
     this.loadKeybinds();
@@ -57,9 +57,20 @@ export default {
   methods: {
     bind(keybind: Record<string, unknown>): void {
       invoke("awaitKeys").then(keys => {
+        deselectElement();
+
+        if (keybind.keys == keys) return;
+
+        if (this.isBound(keys)) {
+          invoke("errorMsg", keys + " is already bound to a different action");
+          return;
+        }
+
         this.bindKeys(keybind, keys);
-        deselectElement()
       });
+    },
+    isBound(keys: string): boolean {
+      return this.keybinds.some(keybind => keybind.keys == keys);
     },
     remove(keybind: Record<string, unknown>): void {
       var index = this.keybinds.indexOf(keybind);
@@ -113,7 +124,7 @@ export default {
       this.keybinds.push(keybind);
     },
     configure(keybind: Record<string, unknown>): void {
-      this.configInputs = this.getDialogInputs(keybind);
+      this.dialog = this.getDialogOptions(keybind);
 
       setTimeout(() => {
         this.$refs.configDialog.open().then(output => {
@@ -129,19 +140,22 @@ export default {
         });
       }, 50);
     },
-    getDialogInputs(keybind: Record<string, unknown>): Record<string, unknown> {
+    getDialogOptions(keybind: Record<string, unknown>): Record<string, unknown> {
       if (keybind == null) return null;
 
       const config = keybind.config;
       const inputs = {};
+
       Object.entries(config).forEach(([id, value]) => {
         if (id == 'filePath') {
           inputs[id] = { type: 'file', label: 'Path to file/application', default: value };
         }
       });
 
-      inputs['remove'] = { type: 'remove', label: 'Remove keybind', func: () => this.remove(keybind) };
-      return inputs;
+      return {
+        inputs: inputs,
+        remove: { label: 'Remove keybind', func: () => this.remove(keybind) }
+      }
     }
   }
 };

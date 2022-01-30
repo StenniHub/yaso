@@ -95,6 +95,9 @@ ipcMain.handle("awaitKeys", () => keyUtils.awaitKeys());
 ipcMain.handle("unbindKeys", (event: Event, keys: string) => keyUtils.unbind(keys));
 ipcMain.handle("bindKeys", (event: Event, keybind: Record<string, unknown>) => keyUtils.bind(keybind));
 
+ipcMain.handle("successMsg", (event: Event, message: string) => messageUtils.sendSuccessMessage(message));
+ipcMain.handle("errorMsg", (event: Event, message: string) => messageUtils.sendErrorMessage(message));
+
 ipcMain.handle("selectFile", (event: Event, path: string) => fileUtils.selectFile(path));
 ipcMain.handle("selectFolder", (event: Event, path: string) => fileUtils.selectFolder(path));
 ipcMain.handle("loadSavefile", () => fileUtils.loadSavefile());

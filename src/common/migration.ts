@@ -1,4 +1,5 @@
 import { actionsById } from "@/common/actions";
+import { clone } from "@/common/utils";
 
 export function migrateKeybindFormat(keybinds: any): Array<unknown> {
   if (keybinds.length) return keybinds;  // Return if already in list format
@@ -9,7 +10,7 @@ export function migrateKeybindFormat(keybinds: any): Array<unknown> {
     if (keybind == null || typeof(keybind) == "string") {
       keybind = { "keys": keybind };
       const actionConfig = actionsById[action].config;
-      if (actionConfig) keybind["config"] = actionConfig;
+      if (actionConfig) keybind["config"] = clone(actionConfig);
       keybinds[action] = keybind;
     }
 
