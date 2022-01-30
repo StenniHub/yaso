@@ -1,20 +1,26 @@
 <template>
-  <v-tooltip v-bind="{[tipPos]: true}">
-    <template v-slot:activator="{ on }">
-      <v-btn v-bind="{[size]: true}" icon @click="click" :disabled="disabled" v-on="on">
-        <v-icon>{{ icon }}</v-icon>
-      </v-btn>
-    </template>
-    <span v-if="tooltip">{{ tooltip }}</span>
-  </v-tooltip>
+  <div class="icon-button">
+    <v-tooltip v-bind="{ [tipPos]: true }" :disabled="hideTooltip">
+      <template v-slot:activator="{ on: tipOn }">
+        <v-btn v-bind="{ [size]: true }" icon @click="click" :disabled="disabled" v-on="{ ...tipOn, ...on }">
+          <v-icon>{{ icon }}</v-icon>
+        </v-btn>
+      </template>
+      <span>{{ tooltip }}</span>
+    </v-tooltip>
+  </div>
 </template>
 
 <script lang="ts">
 export default {
   props: {
     icon: String,
-    onClick: Function,
+    onClick: {
+      type: Function,
+      default: function(): void { return }
+    },
     disabled: Boolean,
+    on: Object,
     size: {
       type: String,
       default: 'x-large'
@@ -24,6 +30,9 @@ export default {
       type: String,
       default: 'top'
     }
+  },
+  computed: {
+    hideTooltip: function(): boolean { return this.tooltip == null }
   },
   methods: {
     click(): void {

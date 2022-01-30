@@ -31,7 +31,7 @@ export const actions = [
   },
   {
     id: "openFile",
-    description: "Open a file",
+    description: "Open custom file/application",
     config: {
       filePath: null
     }

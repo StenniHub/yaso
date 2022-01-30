@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="dialog" persistent>
+  <v-dialog v-model="dialog" persistent v-if="inputs">
     <v-card class="dialog-card">
       <v-card-title v-if="header" v-text="header" />
 
@@ -12,6 +12,8 @@
           <v-text-field outlined :label="params.label" v-model="output[key]" />
           <v-icon @click="params.type === 'file' ? selectFile(key) : selectFolder(key)">mdi-folder</v-icon>
         </div>
+
+        <icon-button v-if="params.type == 'remove'" icon="mdi-delete" class="delete-button" :onClick="remove" />
       </div>
 
       <v-card-actions>
@@ -26,8 +28,10 @@
 <script lang="ts">
 import Vue from "vue";
 import { selectFile, selectFolder } from "@/vue/utils/ipcUtils";
+import IconButton from './IconButton.vue';
 
 export default {
+  components: { IconButton },
   props: {
     header: String,
     description: String,
@@ -55,9 +59,11 @@ export default {
   }),
   methods: {
     open(): Promise<unknown> {
-      Object.entries(this.inputs).forEach(([key, params]) => {
-        this.setNonNull(key, params["default"]);
-      });
+      if (this.inputs) {
+        Object.entries(this.inputs).forEach(([key, params]) => {
+          this.setNonNull(key, params["default"]);
+        });
+      }
       
       this.dialog = true;
       return new Promise((resolve, reject) => {
@@ -78,7 +84,12 @@ export default {
       this.dialog = false;
     },
     isValid(): boolean {
-      return Object.entries(this.inputs).every(([key, params]) => params["optional"] || this.output[key] != null);
+      if (!this.inputs) return false;
+      
+      return Object.entries(this.inputs).every(([key, params]) => {
+        if (key == 'remove') return true;
+        return params["optional"] || this.output[key] != null
+      });
     },
     setNonNull(key:string, value:unknown): void {
       if (value != null) Vue.set(this.output, key, value);
@@ -88,6 +99,10 @@ export default {
     },
     selectFolder(key: string): void {
       selectFolder(this.output[key]).then(result => this.setNonNull(key, result));
+    },
+    remove(): void {
+      this.inputs.remove.func();
+      this.cancel();
     }
   },
   provide(): Record<string, unknown> {
