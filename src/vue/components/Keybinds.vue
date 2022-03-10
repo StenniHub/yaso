@@ -34,7 +34,6 @@
 <script lang="ts">
 import { invoke, selectFile } from "@/vue/utils/ipcUtils";
 import { actions, actionsById } from "@/common/actions";
-import { migrateKeybindFormat } from "@/common/migration";
 import { clone } from "@/common/utils";
 import IconButton from './IconButton.vue';
 import ConfirmDialog from './ConfirmDialog.vue';
@@ -112,7 +111,7 @@ export default {
     },
     async loadKeybinds(): Promise<unknown> {
       return invoke("readConfig", "keybinds").then(keybinds => {
-        this.keybinds = migrateKeybindFormat(keybinds);
+        this.keybinds = keybinds;
       });
     },
     async saveKeybinds(): Promise<unknown> {

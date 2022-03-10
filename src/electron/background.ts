@@ -7,7 +7,7 @@ import * as keyUtils from "./utils/keyutils";
 import * as fileUtils from "./utils/fileutils";
 import * as messageUtils from "./utils/messageUtils";
 import iohook from "iohook";  // Note: iohook requires Visual C++ Redistributable
-import { migrateKeybindFormat } from "@/common/migration";
+import { applyMigrations } from "./migration";
 
 const isDevelopment = process.env.NODE_ENV !== "production";
 
@@ -57,10 +57,13 @@ app.on("ready", async () => {
     }
   }
 
+  fileUtils.initFolders();
+  applyMigrations();
+
   createWindow();
   iohook.start(false);
-  fileUtils.initFolders();
 
+  // Resize window
   const session = fileUtils.readConfig("session");
   if (session && session.windowSize) {
     const sizes = session.windowSize.split("x");
@@ -70,7 +73,7 @@ app.on("ready", async () => {
   }
 
   // Activate all hotkeys
-  const keybinds = migrateKeybindFormat(fileUtils.readConfig("keybinds"));  // Make sure format is up to date
+  const keybinds = fileUtils.readConfig("keybinds");
   keybinds.forEach(async keybind => {
     if (keybind["keys"] != null) keyUtils.bind(keybind);
   })

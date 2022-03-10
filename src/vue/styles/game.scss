@@ -4,11 +4,12 @@
     justify-content: center;
 
     .v-card {
-        margin: 0.5rem;
         width: 400px;
+        margin: 0.5rem;
 
-        > .v-img {
+        .v-image, .v-responsive__sizer {
             height: 200px;
+            padding: 0 !important;
         }
     }
 }
