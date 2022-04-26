@@ -40,40 +40,46 @@ export default {
   data: (): Record<string, unknown> => ({
     isRoot: true
   }),
-  computed: mapState({
-    game: state => state["game"],
-    images: state => state["images"],
-    dialogs: state => {
-      const game = state["game"] || {};
-      return {
-        folderDialog: {
-          header: "Create new folder",
-          inputs: {
-            folder: { type: 'text', label: 'Name of folder' }
-          }
-        },
-        fileDialog: {
-          header: "Import savefile",
-          inputs: {
-            file: { type: 'text', label: 'Name of file', default: game.savefile && game.savefile.split("\\").pop() }
-          }
-        },
-        settingsDialog: {
-          inputs: {
-            savefile: { type: 'file', label: 'Path to savefile', default: game.savefile },
-            backups: { type: 'folder', label: 'Path to backups', default: game.backups }
+  computed: {
+    isSelected(): boolean {
+      return this.game.selected.folder == null && this.game.selected.file == null;
+    },
+    ...mapState({
+      game: state => state["game"],
+      images: state => state["images"],
+      dialogs: state => {
+        const game = state["game"] || {};
+        return {
+          folderDialog: {
+            header: "Create new folder",
+            inputs: {
+              folder: { type: 'text', label: 'Name of folder' }
+            }
+          },
+          fileDialog: {
+            header: "Import savefile",
+            inputs: {
+              file: { type: 'text', label: 'Name of file', default: game.savefile && game.savefile.split("\\").pop() }
+            }
+          },
+          settingsDialog: {
+            inputs: {
+              savefile: { type: 'file', label: 'Path to savefile', default: game.savefile },
+              backups: { type: 'folder', label: 'Path to backups', default: game.backups }
+            }
           }
         }
       }
-    }
-  }),
+    })
+  },
   methods: {
     ...mapActions(["saveGames"]),
     getPath(): string {  // Overrides value when calling refresh and when children ask for parent path
       return this.game.backups;
     },
     isFileSelected(): boolean {
-      this.isSelected();  // Required to refresh listeners
+      if (this.isSelected) this.refreshListeners();  // TODO: Find a better place to do this
+
       return this.game.selected.file != null;
     },
     validSettings(): boolean {

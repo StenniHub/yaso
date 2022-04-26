@@ -60,7 +60,13 @@
   
 .file-container {
     padding: 0.15rem 0 0.15rem 0.75rem;
-  
+
+    .folder-content {
+        padding-top: 0.15rem;
+    }
+}
+
+.file-button {
     > .v-btn {
         padding: 0 0 0 0.5rem !important;
         margin-right: 0.5rem;
@@ -68,10 +74,6 @@
         &.selected {
             background: gray !important;
         }
-    }
-
-    .folder-content {
-        padding-top: 0.15rem;
     }
 }
 
