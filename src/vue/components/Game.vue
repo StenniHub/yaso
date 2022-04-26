@@ -11,7 +11,7 @@
     </div>
 
     <v-container v-if="validSettings()" id="root-folder">
-      <component ref="file" v-for="file in files" :is="componentType(file)" :key="file.name" :name="file.name" :path="file.path" />
+      <component ref="file" v-for="file in files" :is="componentType(file)" :key="file.name" :name="file.name" :path="file.path" :parent="self()" />
     </v-container>
 
     <div class="button-footer">

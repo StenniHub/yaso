@@ -41,7 +41,7 @@ const Folder = Vue.extend({
       this.selectedFile = null;
       this.refreshListeners();
 
-      if (!this.isRoot) this.$parent.selectFileByName(this.name);
+      if (!this.isRoot) this.parent.selectFileByName(this.name);
     },
     open(): void {
       this.isOpen = true;
@@ -56,11 +56,11 @@ const Folder = Vue.extend({
     },
     selectNextFromParent() {
       this.selectedFile = null;
-      this.$parent.selectNext();
+      this.parent.selectNext();
     },
     selectPreviousFromParent() {
       this.selectedFile = null;
-      this.$parent.selectPrevious();
+      this.parent.selectPrevious();
     },
     selectNext(): void {
       const files = this.files;
@@ -132,7 +132,7 @@ const Folder = Vue.extend({
     },
     selectFileByName(name: string) {
       this.selectedFile = this.files.find(file => file.name == name);
-      if (!this.isRoot) this.$parent.selectFileByName(this.name);
+      if (!this.isRoot) this.parent.selectFileByName(this.name);
     }
   },
   mounted(): void {

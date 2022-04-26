@@ -25,7 +25,7 @@
     </v-menu>
 
     <div v-if="isFolder" v-show="isOpen" class="folder-content">
-      <component ref="file" v-for="file in files" :is="componentType(file)" :key="file.name" :name="file.name" :path="file.path" />
+      <component ref="file" v-for="file in files" :is="componentType(file)" :key="file.name" :name="file.name" :path="file.path" :parent="self()" />
     </div>
 
     <confirm-dialog ref="renameDialog" :inputs="{ name: { type: 'text', label: 'Name of ' + (isFolder ? 'folder' : 'file'), default: name } }" />
@@ -47,7 +47,8 @@ const File = Vue.extend({
   components: { ConfirmDialog },
   props: {
     name: String,
-    path: String
+    path: String,
+    parent: Folder
   },
   data: (): Record<string, unknown> => ({
     isFolder: false,
@@ -58,6 +59,9 @@ const File = Vue.extend({
   }),
   methods: {
     ...mapActions(["selectFile"]),
+    self() {  // Passing "this" as prop or saving "this" on data was not working, hacky workaround
+      return this;
+    },
     getPath(): string {
       return this.path;
     },
@@ -68,21 +72,24 @@ const File = Vue.extend({
       return file.isFolder ? Folder : File;
     },
     isSelected(): boolean {
-      const isSelected = (this.game.selected.folder + "\\" + this.game.selected.file) === this.path;
-      if (isSelected) this.refreshListeners();
-      return isSelected;
+      return (this.game.selected.folder + "\\" + this.game.selected.file) === this.path;
     },
     select(isKeyEvent: boolean): void {
       if (isKeyEvent) this.scrollTo();
-      if (this.isSelected()) this.selectFile({ folder: null, file: null });
-      else this.selectFile({ folder: this.$parent.getPath(), file: this.name });
-      this.$parent.selectFileByName(this.name);
+      
+      if (!this.isSelected()) {
+        this.selectFile({ folder: this.parent.getPath(), file: this.name });
+        this.parent.selectFileByName(this.name);
+        this.refreshListeners();
+      } else {
+        this.selectFile({ folder: null, file: null });
+      }     
     },
     selectNext(): void {
-      if (this.isSelected()) this.$parent.selectNext(this);
+      if (this.isSelected()) this.parent.selectNext();
     },
     selectPrevious(): void {
-      if (this.isSelected()) this.$parent.selectPrevious(this);
+      if (this.isSelected()) this.parent.selectPrevious();
     },
     revealInExplorer(): void {
       invoke("revealInExplorer", this.path);
@@ -90,8 +97,8 @@ const File = Vue.extend({
     renameFile(): void {
       this.$refs.renameDialog.open().then(output => {
         const isSelected = this.isSelected();
-        if (output != null) invoke("rename", this.path, this.$parent.getPath() + "\\" + output.name).then(() => {
-          this.$parent.refresh().then(() => {
+        if (output != null) invoke("rename", this.path, this.parent.getPath() + "\\" + output.name).then(() => {
+          this.parent.refresh().then(() => {
             if (isSelected) this.select();
           });
         });
@@ -100,14 +107,14 @@ const File = Vue.extend({
     deleteFile(): void {
       this.$refs.deleteDialog.open().then(output => {
         if (this.isSelected()) this.selectFile({ folder: null, file: null });
-        if (output != null) invoke("remove", this.path).then(this.$parent.refresh);
+        if (output != null) invoke("remove", this.path).then(this.parent.refresh);
       });
     },
     refreshListeners(): void {
       removeAllListeners();
       ipcRenderer.on("selectNext", () => this.selectNext());
       ipcRenderer.on("selectPrevious", () => this.selectPrevious());
-      ipcRenderer.on("refreshSelected", this.$parent.refresh);
+      ipcRenderer.on("refreshSelected", this.parent.refresh);
     },
     scrollTo(): void {
       scrollToElement(document.getElementById("root-folder"), this.$refs.root.$el);
@@ -118,7 +125,10 @@ const File = Vue.extend({
     }
   },
   mounted(): void {
-    if (!this.isRoot && this.isSelected()) setTimeout(this.scrollTo, 0);  // Does not work without tiny delay
+    if (!this.isRoot && this.isSelected()) {
+      this.refreshListeners();
+      setTimeout(this.scrollTo, 0);  // Does not work without tiny delay
+    }
   }
 });
 
