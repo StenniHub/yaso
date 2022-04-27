@@ -11,7 +11,7 @@
     </div>
 
     <v-container v-if="validSettings()" id="root-folder">
-      <component ref="file" v-for="file in files" :is="componentType(file)" :key="file.name" :name="file.name" :path="file.path" :parent="self()" />
+      <component ref="file" v-for="file in files" :is="componentType(file)" :key="file.name" :name="file.name" :dir="path" @parent="onEvent" />
     </v-container>
 
     <div class="button-footer">
@@ -41,6 +41,9 @@ export default {
     isRoot: true
   }),
   computed: {
+    path() {
+      return this.game.backups;
+    },
     isSelected(): boolean {
       return this.game.selected.folder == null && this.game.selected.file == null;
     },
@@ -74,9 +77,6 @@ export default {
   },
   methods: {
     ...mapActions(["saveGames"]),
-    getPath(): string {  // Overrides value when calling refresh and when children ask for parent path
-      return this.game.backups;
-    },
     isFileSelected(): boolean {
       if (this.isSelected) this.refreshListeners();  // TODO: Find a better place to do this
 
@@ -97,13 +97,13 @@ export default {
     },
     newFolder(): void {
       this.$refs.folderDialog[0].open().then(output => {
-        const basePath = this.game.selected.folder || this.getPath();
+        const basePath = this.game.selected.folder || this.path;
         if (output != null) invoke("createFolder", basePath + "\\" + output.folder).then(this.refreshSelected);
       });
     },
     importSavefile(): void {
       this.$refs.fileDialog[0].open().then(output => {
-        const basePath = this.game.selected.folder || this.getPath();
+        const basePath = this.game.selected.folder || this.path;
         if (output != null) invoke("copyFile", this.game.savefile, basePath + "\\" + output.file).then(this.refreshSelected);
       });
     },

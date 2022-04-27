@@ -1,9 +1,9 @@
 <template>
   <div class="file-container" ref="container">
-    <file-button ref="fileButton" :click="() => select(false)" :name="name" :icon="icon" :is-selected="isSelected" :contextOptions="contextOptions" />
+    <file-button ref="fileButton" @click="() => select(false)" :name="name" :icon="icon" :is-selected="isSelected" :contextOptions="contextOptions" />
 
     <div v-show="isOpen" class="folder-content">
-      <component ref="file" v-for="file in files" :is="componentType(file)" :key="file.name" :name="file.name" :path="file.path" :parent="self()" />
+      <component ref="file" v-for="file in files" :is="componentType(file)" :key="file.name" :name="file.name" :dir="path" @parent="onEvent" />
     </div>
 
     <!-- TODO: Have these inside file button and trigger from outside? -->
@@ -40,6 +40,12 @@ const Folder = Vue.extend({
     }
   },
   methods: {
+    onEvent(action: string, payload: Record<string, unknown>) {
+      if (action === "selectNext") this.selectNext();
+      else if (action === "selectPrevious") this.selectPrevious();
+      else if (action === "selectFileByName") this.selectFileByName(payload.name);
+      else if (action === "refresh") this.refresh();
+    },
     componentType(file: FileObject) {
       return file.isFolder ? Folder : File;
     },
@@ -58,7 +64,7 @@ const Folder = Vue.extend({
       this.selectedFile = null;
       this.refreshListeners();
 
-      if (!this.isRoot) this.parent.selectFileByName(this.name);
+      if (!this.isRoot) this.$emit("parent", "selectFileByName", { name: this.name });
     },
     open(): void {
       this.isOpen = true;
@@ -73,11 +79,11 @@ const Folder = Vue.extend({
     },
     selectNextFromParent() {
       this.selectedFile = null;
-      this.parent.selectNext();
+      this.$emit("parent", "selectNext");
     },
     selectPreviousFromParent() {
       this.selectedFile = null;
-      this.parent.selectPrevious();
+      this.$emit("parent", "selectPrevious");
     },
     selectNext(): void {
       const files = this.files;
@@ -120,9 +126,9 @@ const Folder = Vue.extend({
       if (lastElement.isOpen) lastElement.selectLast();
       else lastElement.select(true);
     },
-    async refresh(): Promise<unknown> {
+    refresh() {
       this.isOpen = true;
-      return invoke("readDir", this.getPath()).then((files: FileObject[]) => {
+      invoke("readDir", this.path).then((files: FileObject[]) => {
         this.files = files;
         for (const file of files) {
           if (this.isFileSelected(file) || this.isFileOnSelectionPath(file)) {
@@ -149,7 +155,7 @@ const Folder = Vue.extend({
     },
     selectFileByName(name: string) {
       this.selectedFile = this.files.find(file => file.name == name);
-      if (!this.isRoot) this.parent.selectFileByName(this.name);
+      if (!this.isRoot) this.$emit("parent", "selectFileByName", { name: this.name });
     }
   },
   mounted(): void {

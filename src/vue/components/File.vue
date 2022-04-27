@@ -1,6 +1,6 @@
 <template>
   <div class="file-container" ref="container">
-    <file-button ref="fileButton" :click="() => select(false)" :name="name" icon="mdi-file" :is-selected="isSelected" :contextOptions="contextOptions" />
+    <file-button ref="fileButton" @click="() => select(false)" :name="name" icon="mdi-file" :is-selected="isSelected" :contextOptions="contextOptions" />
 
     <confirm-dialog ref="renameDialog" :inputs="{ name: { type: 'text', label: 'Name of file', default: name } }" />
     <confirm-dialog ref="deleteDialog" :header="'Are you sure you want delete ' + name + '?'" />
@@ -12,7 +12,6 @@ import Vue from "vue";
 import { mapState, mapActions } from "vuex";
 import { ipcRenderer, invoke, removeAllListeners } from "@/vue/utils/ipcUtils";
 import { scrollToElement } from "@/vue/utils/domUtils";
-import Folder from "./Folder.vue";
 import FileButton from "./FileButton.vue";
 import ConfirmDialog from "./ConfirmDialog.vue";
 
@@ -21,14 +20,16 @@ const File = Vue.extend({
   components: { FileButton, ConfirmDialog },
   props: {
     name: String,
-    path: String,
-    parent: Folder  // TODO: Remove this dependency
+    dir: String
   },
   data: (): Record<string, unknown> => ({
     contextOptions: [],
     isRoot: false
   }),
   computed: {
+    path(): string {
+      return this.dir + "\\" + this.name;
+    },
     isSelected(): boolean {
       return (this.game.selected.folder + "\\" + this.game.selected.file) === this.path;
     },
@@ -38,55 +39,51 @@ const File = Vue.extend({
   },
   methods: {
     ...mapActions(["selectFile"]),
-    self() {  // Passing "this" as prop or saving "this" on data was not working, hacky workaround
-      return this;
-    },
-    getPath(): string {
-      return this.path;
-    },
-    getIcon(): string {
-      return "mdi-file";
-    },
     select(isKeyEvent: boolean): void {
       if (isKeyEvent) this.scrollTo();
       
       if (!this.isSelected) {
-        this.selectFile({ folder: this.parent.getPath(), file: this.name });
-        this.parent.selectFileByName(this.name);
+        this.selectFile({ folder: this.dir, file: this.name });
+        this.$emit("parent", "selectFileByName", { name: this.name });
         this.refreshListeners();
       } else {
         this.selectFile({ folder: null, file: null });
       }     
     },
+    deselect() {
+      if (this.isSelected) {
+        this.selectFile({ folder: null, file: null });
+        removeAllListeners();
+      }
+    },
     selectNext(): void {
-      if (this.isSelected) this.parent.selectNext();
+      if (this.isSelected) this.$emit("parent", "selectNext");
     },
     selectPrevious(): void {
-      if (this.isSelected) this.parent.selectPrevious();
+      if (this.isSelected) this.$emit("parent", "selectPrevious");
     },
     revealInExplorer(): void {
       invoke("revealInExplorer", this.path);
     },
     renameFile(): void {
       this.$refs.renameDialog.open().then(output => {
-        if (output != null) invoke("rename", this.path, this.parent.getPath() + "\\" + output.name).then(() => {
-          this.parent.refresh().then(() => {
-            if (this.isSelected) this.select();
-          });
+        if (output != null) invoke("rename", this.path, this.dir + "\\" + output.name).then(() => {
+          this.deselect();  // Deselect to prevent attempt to load non-existing file
+          this.$emit("parent", "refresh");
         });
       });
     },
     deleteFile(): void {
       this.$refs.deleteDialog.open().then(output => {
-        if (this.isSelected) this.selectFile({ folder: null, file: null });
-        if (output != null) invoke("remove", this.path).then(this.parent.refresh);
+        this.deselect();
+        if (output != null) invoke("remove", this.path).then(() => this.$emit("parent", "refresh"));
       });
     },
     refreshListeners(): void {
       removeAllListeners();
       ipcRenderer.on("selectNext", () => this.selectNext());
       ipcRenderer.on("selectPrevious", () => this.selectPrevious());
-      ipcRenderer.on("refreshSelected", this.parent.refresh);
+      ipcRenderer.on("refreshSelected", () => this.$emit("parent", "refresh"));
     },
     scrollTo(): void {
       scrollToElement(document.getElementById("root-folder"), this.$refs.fileButton.$el);
