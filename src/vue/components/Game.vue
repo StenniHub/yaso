@@ -41,38 +41,37 @@ export default {
     isRoot: true
   }),
   computed: {
-    path() {
+    path(): string {
       return this.game.backups;
     },
     isSelected(): boolean {
       return this.game.selected.folder == null && this.game.selected.file == null;
     },
-    ...mapState({
-      game: state => state["game"],
-      images: state => state["images"],
-      dialogs: state => {
-        const game = state["game"] || {};
-        return {
-          folderDialog: {
-            header: "Create new folder",
-            inputs: {
-              folder: { type: 'text', label: 'Name of folder' }
-            }
-          },
-          fileDialog: {
-            header: "Import savefile",
-            inputs: {
-              file: { type: 'text', label: 'Name of file', default: game.savefile && game.savefile.split("\\").pop() }
-            }
-          },
-          settingsDialog: {
-            inputs: {
-              savefile: { type: 'file', label: 'Path to savefile', default: game.savefile },
-              backups: { type: 'folder', label: 'Path to backups', default: game.backups }
-            }
+    dialogs(): Record<string, unknown> {
+      return {
+        folderDialog: {
+          header: "Create new folder",
+          inputs: {
+            folder: { type: 'text', label: 'Name of folder' }
+          }
+        },
+        fileDialog: {
+          header: "Import savefile",
+          inputs: {
+            file: { type: 'text', label: 'Name of file', default: this.game.savefile && this.game.savefile.split("\\").pop() }
+          }
+        },
+        settingsDialog: {
+          inputs: {
+            savefile: { type: 'file', label: 'Path to savefile', default: this.game.savefile },
+            backups: { type: 'folder', label: 'Path to backups', default: this.game.backups }
           }
         }
       }
+    },
+    ...mapState({
+      game: state => state["game"],
+      images: state => state["images"]
     })
   },
   methods: {
