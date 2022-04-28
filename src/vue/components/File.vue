@@ -67,7 +67,9 @@ const File = Vue.extend({
     },
     renameFile(): void {
       this.$refs.renameDialog.open().then(output => {
-        if (output != null) invoke("rename", this.path, this.dir + "\\" + output.name).then(() => {
+        if (output == null) return;
+
+        invoke("move", this.path, this.dir + "\\" + output.name).then(() => {
           this.deselect();  // Deselect to prevent attempt to load non-existing file
           this.$emit("parent", "refresh");
         });

@@ -11,7 +11,9 @@
     </div>
 
     <v-container v-if="validSettings()" id="root-folder">
-      <component ref="file" v-for="file in files" :is="componentType(file)" :key="file.name" :name="file.name" :dir="path" @parent="onEvent" />
+      <draggable group="folderGroup" :list="files" @change="onFileMove">
+        <component ref="file" v-for="file in files" :is="componentType(file)" :key="file.name" :name="file.name" :dir="path" @parent="onEvent" />
+      </draggable>
     </v-container>
 
     <div class="button-footer">
@@ -33,9 +35,10 @@ import { invoke, removeAllListeners } from "@/vue/utils/ipcUtils";
 import ConfirmDialog from "./ConfirmDialog.vue";
 import IconButton from "./IconButton.vue";
 import Folder from "./Folder.vue";
+import Draggable from "vuedraggable";
 
 export default {
-  components: { ConfirmDialog, IconButton },
+  components: { ConfirmDialog, IconButton, Draggable },
   mixins: [Folder],  // Makes the game view act as a root folder, but with overriden template and logic
   data: (): Record<string, unknown> => ({
     isRoot: true

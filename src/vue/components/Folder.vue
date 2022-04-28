@@ -3,7 +3,9 @@
     <file-button ref="fileButton" @click="() => select(false)" :name="name" :icon="icon" :is-selected="isSelected" :contextOptions="contextOptions" />
 
     <div v-show="isOpen" class="folder-content">
-      <component ref="file" v-for="file in files" :is="componentType(file)" :key="file.name" :name="file.name" :dir="path" @parent="onEvent" />
+      <draggable group="folderGroup" :list="files" @change="onFileMove">
+        <component ref="file" v-for="file in files" :is="componentType(file)" :key="file.name" :name="file.name" :dir="path" @parent="onEvent" />
+      </draggable>
     </div>
 
     <!-- TODO: Have these inside file button and trigger from outside? -->
@@ -18,15 +20,17 @@ import File from "./File.vue";
 import { FileObject } from "@/common/files";
 import { ipcRenderer, invoke, removeAllListeners } from "@/vue/utils/ipcUtils";
 import ConfirmDialog from "./ConfirmDialog.vue";
+import Draggable from "vuedraggable";
 
 // Uses Vue.extend so we can refer to the component type and load dynamically
 const Folder = Vue.extend({
   mixins: [File],
-  components: { ConfirmDialog },
+  components: { ConfirmDialog, Draggable },
   data: () => ({
     isOpen: false,
     files: [],
-    selectedFile: null
+    selectedFile: null,
+    dragging: false
   }),
   computed: {
     isSelected(): boolean {
@@ -45,6 +49,22 @@ const Folder = Vue.extend({
       else if (action === "selectPrevious") this.selectPrevious();
       else if (action === "selectFileByName") this.selectFileByName(payload.name);
       else if (action === "refresh") this.refresh();
+    },
+    async onFileMove(event): Promise<void> {
+      // TODO: Can we just revert move events instead of refreshing, and only update on add/remove?
+      if (event.added) {
+        const file: FileObject = event.added.element;
+        const toPath = this.path + "\\" + file.name;
+        
+        // Have to exclude file with original path, since VueDraggable has already moved it to the new list
+        if (this.files.some(otherFile => otherFile.name === file.name && otherFile.path !== file.path)) {
+          invoke("errorMsg", "Destination folder already has file of same name");
+        } else {
+          await invoke("move", file.path, toPath);
+        }
+      }
+
+      this.refresh();
     },
     componentType(file: FileObject) {
       return file.isFolder ? Folder : File;
