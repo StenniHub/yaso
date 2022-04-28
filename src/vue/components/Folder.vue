@@ -64,6 +64,8 @@ const Folder = Vue.extend({
         }
       }
 
+      if (event.remove) return;  // No need for refresh
+
       this.refresh();
     },
     componentType(file: FileObject) {
@@ -131,7 +133,7 @@ const Folder = Vue.extend({
       }
 
       const selectedIdx = files.indexOf(selectedFile);
-      if (selectedIdx >= 1) {
+      if (selectedIdx > 0) {
         const prevElement = this.getFileElement(files[selectedIdx - 1]);
         if (prevElement.isOpen && prevElement.files.length > 0) prevElement.selectLast();
         else prevElement.select(true);
@@ -142,6 +144,11 @@ const Folder = Vue.extend({
       else this.select(true);
     },
     selectLast() {
+      if (this.files.length === 0) {
+        this.select(true);
+        return;
+      }
+
       const lastElement = this.getFileElement(this.files[this.files.length - 1]);
       if (lastElement.isOpen) lastElement.selectLast();
       else lastElement.select(true);
