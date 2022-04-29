@@ -2,11 +2,10 @@
   <div class="file-container" ref="container">
     <file-button ref="fileButton" @click="() => select(false)" :name="name" :icon="icon" :is-selected="isSelected" :contextOptions="contextOptions" />
 
-    <div v-show="isOpen" class="folder-content">
-      <draggable group="folderGroup" :list="files" @change="onFileMove">
-        <component ref="file" v-for="file in files" :is="componentType(file)" :key="file.name" :name="file.name" :dir="path" @parent="onEvent" />
-      </draggable>
-    </div>
+    <draggable v-show="isOpen" class="folder-content" :class="{ dragging: dragging }" group="folderGroup" :list="files"
+               @change="onFileMove" @start="startDrag" @end="endDrag">
+      <component ref="file" v-for="file in files" :is="componentType(file)" :key="file.name" :name="file.name" :dir="path" @parent="onEvent" />
+    </draggable>
 
     <!-- TODO: Have these inside file button and trigger from outside? -->
     <confirm-dialog ref="renameDialog" :inputs="{ name: { type: 'text', label: 'Name of folder', default: name } }" />
@@ -21,6 +20,7 @@ import { FileObject } from "@/common/files";
 import { ipcRenderer, invoke, removeAllListeners } from "@/vue/utils/ipcUtils";
 import ConfirmDialog from "./ConfirmDialog.vue";
 import Draggable from "vuedraggable";
+import { mapState, mapMutations } from "vuex";
 
 // Uses Vue.extend so we can refer to the component type and load dynamically
 const Folder = Vue.extend({
@@ -30,20 +30,30 @@ const Folder = Vue.extend({
     isOpen: false,
     files: [],
     selectedFile: null,
-    dragging: false
+    hover: false
   }),
   computed: {
     isSelected(): boolean {
       return this.game.selected.folder == this.path && this.game.selected.file == null;
     },
     isOnSelectionPath(): boolean {
-      return (this.game.selected.folder + "\\").startsWith(this.path + "\\"); 
+      return (this.game.selected.folder + "\\").startsWith(this.path + "\\");
     },
     icon(): string {
       return this.isOpen ? "mdi-folder-open" : "mdi-folder";
-    }
+    },
+    ...mapState({
+      dragging: state => state["dragging"]
+    })
   },
   methods: {
+    ...mapMutations(["setDragging"]),
+    startDrag(): void {
+      this.setDragging(true);
+    },
+    endDrag(): void {
+      this.setDragging(false);
+    },
     onEvent(action: string, payload: Record<string, unknown>) {
       if (action === "selectNext") this.selectNext();
       else if (action === "selectPrevious") this.selectPrevious();
@@ -75,7 +85,7 @@ const Folder = Vue.extend({
       return file.path == (this.game.selected.folder + "\\" + this.game.selected.file);
     },
     isFileOnSelectionPath(file: FileObject): boolean {
-      return (this.game.selected.folder + "\\").startsWith(file.path + "\\"); 
+      return (this.game.selected.folder + "\\").startsWith(file.path + "\\");
     },
     select(keyEvent: boolean): void {
       if (keyEvent) this.scrollTo();
