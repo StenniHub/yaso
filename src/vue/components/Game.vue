@@ -10,7 +10,7 @@
       <h1>{{ game.title }}</h1>
     </div>
 
-    <v-container v-if="validSettings()" id="root-folder">
+    <v-container v-if="validSettings" id="root-folder">
       <draggable v-bind="draggableProps" v-on="draggableHandlers">
         <component ref="file" v-for="file in files" :is="getFileComponent(file)" :key="file.name" :dir="path" @parent="onEvent" />
       </draggable>
@@ -19,7 +19,7 @@
     <div class="button-footer">
       <icon-button icon="mdi-folder-plus" :onClick="newFolder" tooltip="Create new folder" />
       <icon-button icon="mdi-file-move" :onClick="importSavefile" tooltip="Import savefile" />
-      <icon-button icon="mdi-file-restore" :onClick="loadSavefile" tooltip="Load savefile" :disabled="!isFileSelected()" />
+      <icon-button icon="mdi-file-restore" :onClick="loadSavefile" tooltip="Load savefile" :disabled="!canLoadSavefile" />
     </div>
 
     <!-- v-for causes ref to return an array, this will be changed in vue 3 -->
@@ -50,6 +50,14 @@ export default {
     isSelected(): boolean {
       return this.game.selected.folder == null && this.game.selected.file == null;
     },
+    canLoadSavefile(): boolean {
+      if (this.isSelected) this.refreshListeners();  // TODO: Find a better place to do this
+
+      return this.game.selected.file != null;
+    },
+    validSettings(): boolean {
+      return this.game.savefile != null && this.game.backups != null;
+    },
     dialogs(): Record<string, unknown> {
       return {
         folderDialog: {
@@ -79,14 +87,6 @@ export default {
   },
   methods: {
     ...mapActions(["saveGames"]),
-    isFileSelected(): boolean {
-      if (this.isSelected) this.refreshListeners();  // TODO: Find a better place to do this
-
-      return this.game.selected.file != null;
-    },
-    validSettings(): boolean {
-      return this.game.savefile != null && this.game.backups != null;
-    },
     editSettings(): void {
       this.$refs.settingsDialog[0].open().then(output => {
         if (output != null) {
@@ -122,7 +122,7 @@ export default {
       return;
     }
 
-    if (!this.validSettings()) {
+    if (!this.validSettings) {
       this.editSettings();
     } else {
       this.refresh();

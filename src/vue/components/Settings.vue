@@ -19,8 +19,8 @@
     </v-row>
 
     <div class="button-footer">
-      <icon-button icon="mdi-close" :onClick="reset" tooltip="Discard changes" :disabled="!isModified()" />
-      <icon-button icon="mdi-check" :onClick="save" tooltip="Save changes" :disabled="!isModified()" />
+      <icon-button icon="mdi-close" :onClick="reset" tooltip="Discard changes" :disabled="!isModified" />
+      <icon-button icon="mdi-check" :onClick="save" tooltip="Save changes" :disabled="!isModified" />
     </div>
   </v-container>
 </template>
@@ -38,9 +38,14 @@ export default {
   data: (): Record<string, unknown> => ({
     modified: {}
   }),
-  computed: mapState({
-    session: state => state["session"]
-  }),
+  computed: {    
+    isModified(): boolean {
+      return Object.entries(this.modified).some(([key, value]) => this.session[key] !== value);
+    },
+    ...mapState({
+      session: state => state["session"]
+    })
+  },
   methods: {
     ...mapActions(["setSession"]),
     save(): void {
@@ -48,9 +53,6 @@ export default {
         this.setSession({ session: this.modified, save: true });
         this.reset();
       }
-    },
-    isModified(): boolean {
-      return Object.entries(this.modified).some(([key, value]) => this.session[key] !== value);
     },
     reset(): void {
       this.modified = deepCopy(this.session);

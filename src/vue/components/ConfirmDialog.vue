@@ -18,7 +18,7 @@
         <icon-button v-if="remove" class="delete-button" icon="mdi-delete" size="medium" :onClick="onRemove" :tooltip="remove.label" />
         <v-spacer />
         <v-btn text v-if="cancellable" @click="cancel">{{ labels.cancel }}</v-btn>
-        <v-btn text @click="confirm" :disabled="!isValid()">{{ labels.confirm }}</v-btn>
+        <v-btn text @click="confirm" :disabled="!isValid">{{ labels.confirm }}</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -57,6 +57,16 @@ export default {
     resolve: null,
     reject: null
   }),
+  computed: {
+    isValid(): boolean {
+      if (!this.inputs) return false;
+      
+      return Object.entries(this.inputs).every(([key, params]) => {
+        if (key == 'remove') return true;
+        return params["optional"] || this.output[key] != null
+      });
+    },
+  },
   methods: {
     open(): Promise<unknown> {
       if (this.inputs) {
@@ -82,14 +92,6 @@ export default {
     closeDialog(): void {
       this.output = {};
       this.dialog = false;
-    },
-    isValid(): boolean {
-      if (!this.inputs) return false;
-      
-      return Object.entries(this.inputs).every(([key, params]) => {
-        if (key == 'remove') return true;
-        return params["optional"] || this.output[key] != null
-      });
     },
     setNonNull(key:string, value:unknown): void {
       if (value != null) Vue.set(this.output, key, value);

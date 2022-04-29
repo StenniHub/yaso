@@ -17,7 +17,7 @@ export default {
     icon: String,
     onClick: {
       type: Function,
-      default: function(): void { return }
+      default: (): void => null
     },
     disabled: Boolean,
     on: Object,
@@ -32,7 +32,9 @@ export default {
     }
   },
   computed: {
-    hideTooltip: function(): boolean { return this.tooltip == null }
+    hideTooltip(): boolean {
+      return this.tooltip == null;
+    }
   },
   methods: {
     click(): void {
