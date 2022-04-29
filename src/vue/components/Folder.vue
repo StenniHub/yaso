@@ -2,9 +2,8 @@
   <div class="file-container" ref="container">
     <file-button ref="fileButton" @click="() => select(false)" :name="name" :icon="icon" :is-selected="isSelected" :contextOptions="contextOptions" />
 
-    <draggable v-show="isOpen" class="folder-content" :class="{ dragging: dragging }" :disabled="disableDrag"
-               group="folderGroup" :list="files" @change="onFileMove" @start="startDrag" @end="endDrag">
-      <component ref="file" v-for="file in files" :is="getFileComponent(file)" :key="file.name" :name="file.name" :dir="path" @parent="onEvent" />
+    <draggable v-show="isOpen" class="folder-content" :class="{ dragging: dragging }" v-bind="draggableProps" v-on="draggableHandlers">
+      <component ref="file" v-for="file in files" :is="getFileComponent(file)" :key="file.name" :dir="path" @parent="onEvent" />
     </draggable>
 
     <!-- TODO: Have these inside file button and trigger from outside? -->
@@ -40,6 +39,22 @@ const Folder = Vue.extend({
     },
     icon(): string {
       return this.isOpen ? "mdi-folder-open" : "mdi-folder";
+    },
+    draggableProps(): Record<string, unknown> {
+      return {
+        disabled: this.disableDrag,
+        group: "folderGroup",
+        list: this.files,
+        forceFallback: true,
+        scrollSensitivity: 80
+      }
+    },
+    draggableHandlers(): Record<string, unknown> {
+      return {
+        change: this.onFileMove,
+        start: this.startDrag,
+        end: this.endDrag
+      }
     },
     ...mapState({
       dragging: state => state["dragging"],

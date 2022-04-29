@@ -19,7 +19,6 @@ import ConfirmDialog from "./ConfirmDialog.vue";
 const File = Vue.extend({
   components: { FileButton, ConfirmDialog },
   props: {
-    name: String,
     dir: String
   },
   data: (): Record<string, unknown> => ({
@@ -27,6 +26,9 @@ const File = Vue.extend({
     isRoot: false
   }),
   computed: {
+    name(): string {
+      return this.$vnode.key;
+    },
     path(): string {
       return this.dir + "\\" + this.name;
     },
