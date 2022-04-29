@@ -126,12 +126,21 @@ a {
 }
 
 .settings-row {
+    padding-left: 1rem;
+    padding-right: 1rem;
+
     .col {
         position: relative;
         display: flex;
-        flex-direction: row;
         justify-content: center;
         align-items: center;
+
+        > .v-input--checkbox {
+            padding: 0;
+            .v-icon {
+                font-size: 2rem !important;
+            }
+        }
 
         .icon-button {
             position: absolute;
@@ -258,6 +267,9 @@ a {
 }
 
 .keybinds-add {
+    padding-left: 1rem;
+    padding-right: 1rem;
+
     .v-btn {
         width: 100%;
         border-radius: 4px;

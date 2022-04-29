@@ -2,9 +2,9 @@
   <div class="file-container" ref="container">
     <file-button ref="fileButton" @click="() => select(false)" :name="name" :icon="icon" :is-selected="isSelected" :contextOptions="contextOptions" />
 
-    <draggable v-show="isOpen" class="folder-content" :class="{ dragging: dragging }" group="folderGroup" :list="files"
-               @change="onFileMove" @start="startDrag" @end="endDrag">
-      <component ref="file" v-for="file in files" :is="componentType(file)" :key="file.name" :name="file.name" :dir="path" @parent="onEvent" />
+    <draggable v-show="isOpen" class="folder-content" :class="{ dragging: dragging }" :disabled="disableDrag"
+               group="folderGroup" :list="files" @change="onFileMove" @start="startDrag" @end="endDrag">
+      <component ref="file" v-for="file in files" :is="getFileComponent(file)" :key="file.name" :name="file.name" :dir="path" @parent="onEvent" />
     </draggable>
 
     <!-- TODO: Have these inside file button and trigger from outside? -->
@@ -29,8 +29,7 @@ const Folder = Vue.extend({
   data: () => ({
     isOpen: false,
     files: [],
-    selectedFile: null,
-    hover: false
+    selectedFile: null
   }),
   computed: {
     isSelected(): boolean {
@@ -43,7 +42,8 @@ const Folder = Vue.extend({
       return this.isOpen ? "mdi-folder-open" : "mdi-folder";
     },
     ...mapState({
-      dragging: state => state["dragging"]
+      dragging: state => state["dragging"],
+      disableDrag: state => state["session"].disableDrag
     })
   },
   methods: {
@@ -61,24 +61,22 @@ const Folder = Vue.extend({
       else if (action === "refresh") this.refresh();
     },
     async onFileMove(event): Promise<void> {
-      // TODO: Can we just revert move events instead of refreshing, and only update on add/remove?
+      // TODO: Can we just revert move events instead of refreshing, and only update on added/removed?
       if (event.added) {
         const file: FileObject = event.added.element;
         const toPath = this.path + "\\" + file.name;
         
         // Have to exclude file with original path, since VueDraggable has already moved it to the new list
         if (this.files.some(otherFile => otherFile.name === file.name && otherFile.path !== file.path)) {
-          invoke("errorMsg", "Destination folder already has file of same name");
+          invoke("errorMsg", "A file with the same name already exists");
         } else {
           await invoke("move", file.path, toPath);
         }
       }
 
-      if (event.remove) return;  // No need for refresh
-
       this.refresh();
     },
-    componentType(file: FileObject) {
+    getFileComponent(file: FileObject) {
       return file.isFolder ? Folder : File;
     },
     isFileSelected(file: FileObject): boolean {

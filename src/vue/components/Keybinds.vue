@@ -12,6 +12,7 @@
         </v-col>
       </template>
     </v-row>
+    
     <v-row class="keybinds-add">
       <v-col cols="8">
         <v-menu offset-y max-height="15rem">

@@ -11,8 +11,8 @@
     </div>
 
     <v-container v-if="validSettings()" id="root-folder">
-      <draggable group="folderGroup" :list="files" @change="onFileMove" @start="startDrag" @end="endDrag">
-        <component ref="file" v-for="file in files" :is="componentType(file)" :key="file.name" :name="file.name" :dir="path" @parent="onEvent" />
+      <draggable :disabled="disableDrag" group="folderGroup" :list="files" @change="onFileMove" @start="startDrag" @end="endDrag">
+        <component ref="file" v-for="file in files" :is="getFileComponent(file)" :key="file.name" :name="file.name" :dir="path" @parent="onEvent" />
       </draggable>
     </v-container>
 

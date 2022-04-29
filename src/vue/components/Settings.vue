@@ -9,6 +9,15 @@
       </v-col>
     </v-row>
 
+    <v-row class="settings-row">
+      <v-col cols="6">
+        <v-checkbox v-model.number="modified.disableDrag" />
+      </v-col>
+      <v-col>
+        <p>Disable dragging of files and folders</p>
+      </v-col>
+    </v-row>
+
     <div class="button-footer">
       <icon-button icon="mdi-close" :onClick="reset" tooltip="Discard changes" :disabled="!isModified()" />
       <icon-button icon="mdi-check" :onClick="save" tooltip="Save changes" :disabled="!isModified()" />
