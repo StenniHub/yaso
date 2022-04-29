@@ -11,7 +11,9 @@
     </div>
 
     <v-container v-if="validSettings()" id="root-folder">
-      <component ref="file" v-for="file in files" :is="componentType(file)" :key="file.name" :name="file.name" :path="file.path" />
+      <draggable v-bind="draggableProps" v-on="draggableHandlers">
+        <component ref="file" v-for="file in files" :is="getFileComponent(file)" :key="file.name" :dir="path" @parent="onEvent" />
+      </draggable>
     </v-container>
 
     <div class="button-footer">
@@ -33,18 +35,22 @@ import { invoke, removeAllListeners } from "@/vue/utils/ipcUtils";
 import ConfirmDialog from "./ConfirmDialog.vue";
 import IconButton from "./IconButton.vue";
 import Folder from "./Folder.vue";
+import Draggable from "vuedraggable";
 
 export default {
-  components: { ConfirmDialog, IconButton },
+  components: { ConfirmDialog, IconButton, Draggable },
   mixins: [Folder],  // Makes the game view act as a root folder, but with overriden template and logic
   data: (): Record<string, unknown> => ({
     isRoot: true
   }),
-  computed: mapState({
-    game: state => state["game"],
-    images: state => state["images"],
-    dialogs: state => {
-      const game = state["game"] || {};
+  computed: {
+    path(): string {
+      return this.game.backups;
+    },
+    isSelected(): boolean {
+      return this.game.selected.folder == null && this.game.selected.file == null;
+    },
+    dialogs(): Record<string, unknown> {
       return {
         folderDialog: {
           header: "Create new folder",
@@ -55,25 +61,27 @@ export default {
         fileDialog: {
           header: "Import savefile",
           inputs: {
-            file: { type: 'text', label: 'Name of file', default: game.savefile && game.savefile.split("\\").pop() }
+            file: { type: 'text', label: 'Name of file', default: this.game.savefile && this.game.savefile.split("\\").pop() }
           }
         },
         settingsDialog: {
           inputs: {
-            savefile: { type: 'file', label: 'Path to savefile', default: game.savefile },
-            backups: { type: 'folder', label: 'Path to backups', default: game.backups }
+            savefile: { type: 'file', label: 'Path to savefile', default: this.game.savefile },
+            backups: { type: 'folder', label: 'Path to backups', default: this.game.backups }
           }
         }
       }
-    }
-  }),
+    },
+    ...mapState({
+      game: state => state["game"],
+      images: state => state["images"]
+    })
+  },
   methods: {
     ...mapActions(["saveGames"]),
-    getPath(): string {  // Overrides value when calling refresh and when children ask for parent path
-      return this.game.backups;
-    },
     isFileSelected(): boolean {
-      this.isSelected();  // Required to refresh listeners
+      if (this.isSelected) this.refreshListeners();  // TODO: Find a better place to do this
+
       return this.game.selected.file != null;
     },
     validSettings(): boolean {
@@ -91,13 +99,13 @@ export default {
     },
     newFolder(): void {
       this.$refs.folderDialog[0].open().then(output => {
-        const basePath = this.game.selected.folder || this.getPath();
+        const basePath = this.game.selected.folder || this.path;
         if (output != null) invoke("createFolder", basePath + "\\" + output.folder).then(this.refreshSelected);
       });
     },
     importSavefile(): void {
       this.$refs.fileDialog[0].open().then(output => {
-        const basePath = this.game.selected.folder || this.getPath();
+        const basePath = this.game.selected.folder || this.path;
         if (output != null) invoke("copyFile", this.game.savefile, basePath + "\\" + output.file).then(this.refreshSelected);
       });
     },

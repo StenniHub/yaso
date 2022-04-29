@@ -107,7 +107,7 @@ ipcMain.handle("loadSavefile", () => fileUtils.loadSavefile());
 ipcMain.handle("toggleReadOnly", () => fileUtils.toggleReadOnly());
 ipcMain.handle("revealInExplorer", (event: Event, path: string) => fileUtils.revealInExplorer(path));
 
-ipcMain.handle("rename", (event: Event, fromPath: string, toPath: string) => fileUtils.rename(fromPath, toPath));
+ipcMain.handle("move", (event: Event, fromPath: string, toPath: string) => fileUtils.rename(fromPath, toPath));
 ipcMain.handle("remove", (event: Event, path: string) => fileUtils.remove(path));
 ipcMain.handle("refreshSelected", () => window.webContents.send("refreshSelected"));
 

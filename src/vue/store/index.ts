@@ -9,7 +9,8 @@ export default new Vuex.Store({
     game: null,
     games: {},
     images: {},
-    session: null
+    session: null,
+    dragging: false
   },
   mutations: {
     setGame(state, id: string) {
@@ -37,6 +38,9 @@ export default new Vuex.Store({
     },
     setBackups(state, filepath: string) {
       state.game.backups = filepath;
+    },
+    setDragging(state, dragging: boolean) {
+      state.dragging = dragging;
     }
   },
   actions: {
