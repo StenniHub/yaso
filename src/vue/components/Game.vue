@@ -1,5 +1,5 @@
 <template>
-  <div class="game-main">
+  <div class="game-main" v-if="game">
     <v-btn icon class="game-settings-btn" @click="editSettings">
       <v-icon>mdi-cog</v-icon>
     </v-btn>
@@ -86,7 +86,13 @@ export default {
     })
   },
   methods: {
-    ...mapActions(["saveGames"]),
+    ...mapActions(["selectGame", "saveGames"]),
+    open(): void {
+      // Do nothing
+    },
+    close(): void {
+      // Do nothing
+    },
     editSettings(): void {
       this.$refs.settingsDialog[0].open().then(output => {
         if (output != null) {
@@ -116,12 +122,10 @@ export default {
       invoke("refreshSelected");  // TODO: Very roundabout way of triggering event, can we do this directly instead? (this.$root does not have removeAllListeners)
     }
   },
+  created(): void {
+    this.selectGame(this.$route.params.id);
+  },
   mounted(): void {
-    if (this.game == null) {
-      this.$router.push("/");
-      return;
-    }
-
     if (!this.validSettings) {
       this.editSettings();
     } else {

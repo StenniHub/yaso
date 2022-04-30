@@ -16,7 +16,7 @@
       </div>
     </v-app-bar>
 
-    <v-main>
+    <v-main v-if="session">
       <router-view />
 
       <confirm-dialog ref="versionDialog" :header="getUpdateHeader()" :description="getUpdateDescription()" :labels="{ cancel: 'Do not notify again', confirm: 'Close'}" />

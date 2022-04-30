@@ -15,7 +15,7 @@
 </template>
 
 <script lang="ts">
-import { mapActions, mapState } from "vuex";
+import { mapState } from "vuex";
 
 export default {
   computed: mapState({
@@ -23,10 +23,8 @@ export default {
     images: state => state["images"]
   }),
   methods: {
-    ...mapActions(["selectGame"]),
     select(id: string): void {
-      this.selectGame(id);
-      this.$router.push("Game");
+      this.$router.push({ name: "Game", params: { id: id } });
     }
   }
 };

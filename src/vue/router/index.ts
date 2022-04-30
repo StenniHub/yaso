@@ -15,7 +15,7 @@ const routes: Array<RouteConfig> = [
     component: Games
   },
   {
-    path: "/game",
+    path: "/game/:id",
     name: "Game",
     component: Game
   },
