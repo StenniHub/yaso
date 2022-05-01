@@ -7,9 +7,14 @@ module.exports = {
       rendererProcessFile: "src/electron/renderer.ts",
       mainProcessWatch: ["src/electron/**/*.ts", "src/common/**/*.ts"],
       nodeIntegration: false,
-      externals: ["iohook"],
+      externals: ["node-global-key-listener"],
       builderOptions: {
-        extraResources: []
+        extraResources: [
+          {
+            from:"node_modules/node-global-key-listener/bin/WinKeyServer.exe",
+            to: "WinKeyServer.exe"
+          }
+        ]
       }
     }
   }

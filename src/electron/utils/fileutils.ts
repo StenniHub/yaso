@@ -110,6 +110,8 @@ export function revealInExplorer(path: string): void {
 
 function isWritable(filePath: string) {
   try {
+    if (!fs.existsSync(filePath)) return true;
+
     fs.accessSync(filePath, fs.constants.W_OK);
     return true;
   } catch (error) {
