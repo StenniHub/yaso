@@ -22,7 +22,8 @@ module.exports = {
       "alignAttributesVertically": true,
       "ignores": []
     }],
-    "vue/max-attributes-per-line": "off"
+    "vue/max-attributes-per-line": "off",
+    "vue/multi-word-component-names": "off"
     //"@typescript-eslint/no-var-requires": 0
   }
 };
