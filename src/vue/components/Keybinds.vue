@@ -57,8 +57,6 @@ export default {
   methods: {
     bind(keybind: Record<string, unknown>): void {
       invoke("awaitKeys").then(keys => {
-        deselectElement();
-
         if (keybind.keys == keys) return;
 
         if (this.isBound(keys)) {
@@ -67,7 +65,7 @@ export default {
         }
 
         this.bindKeys(keybind, keys);
-      });
+      }).finally(deselectElement);
     },
     isBound(keys: string): boolean {
       return this.keybinds.some(keybind => keybind.keys == keys);

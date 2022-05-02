@@ -14,6 +14,7 @@ if (isDevelopment) {
 }
 
 const keyListener = new GlobalKeyboardListener({ windows: { serverPath: serverPath }});
+const modifiers = ["META", "CTRL", "ALT", "SHIFT"];
 const separator = " + ";
 const boundKeys = {};
 
@@ -28,11 +29,17 @@ const actions = {
 
 function getKeys(event, down): string {
   let keys = "";
-  if (down["LEFT CTRL"]) keys += "LEFT CTRL" + separator;
-  if (down["LEFT ALT"]) keys += "LEFT ALT" + separator;
-  if (down["LEFT SHIFT"]) keys += "LEFT SHIFT" + separator;
-  keys += event.name;
+  for (const modifier of modifiers) {
+    const leftModifier = "LEFT " + modifier;
+    const rightModifier = "RIGHT " + modifier;
 
+    if (event.name === leftModifier || event.name === rightModifier) return null;  // Only modifiers are pressed
+    
+    if (down[leftModifier]) keys += leftModifier + separator;
+    if (down[rightModifier]) keys += rightModifier + separator;
+  }
+
+  keys += event.name;
   return keys;
 }
 
@@ -40,6 +47,7 @@ function keybindHandler(event, down) {
   if (event.state !== "DOWN") return;
 
   const keys = getKeys(event, down);
+  if (keys == null) return;
 
   if (boundKeys[keys] != null) boundKeys[keys]();
 }
@@ -55,17 +63,19 @@ export function awaitKeys(): Promise<string> {
     const keyHandler = (event, down) => {
       if (event.state !== "UP") return;
 
+      let keys = getKeys(event, down);
+      if (keys == null) return;
+
       keyListener.addListener(keybindHandler);
       keyListener.removeListener(keyHandler);
 
-      if (event.name === "ESCAPE") {
+      if (keys === "ESCAPE") {
         reject("Cancelled by user");
       }
 
-      let keys = getKeys(event, down);
+      // Replace some key names for better readability
       keys = keys.replace("RETURN", "ENTER");
       keys = keys.replace("INS", "INSERT");
-
       resolve(keys);
     };
 
@@ -73,7 +83,6 @@ export function awaitKeys(): Promise<string> {
   });
 }
 
-// Unregister does not return a value, but if unregister did not work then register likely did not work either
 export function unbind(keys: string): void {
   delete boundKeys[keys];
   console.log("Unregistered: ", keys);
@@ -84,8 +93,10 @@ export function bind(keybind: Record<string, any>): boolean {
   const action = keybind["action"];
 
   // TODO: Convert to globalShortcut format and check if keys are already registered first
+  // window.webContents.send("message", { message: "Could not register keybind: " + keys, success: false });
+  // return false;
 
-  // Converts old key format to compatible ones
+  // Converts old key format to compatible ones (TODO: move to migration script)
   keys = keys.toUpperCase();
   keys = keys.replace("ARROW DOWN", "DOWN ARROW");
   keys = keys.replace("ARROW UP", "UP ARROW");
@@ -93,20 +104,14 @@ export function bind(keybind: Record<string, any>): boolean {
   keys = keys.replace("INSERT", "INS");
 
   if (boundKeys[keys] != null) {
-    unbind(keys);  // Collision detection is handled by Vue now
+    unbind(keys);  // Collision detection is handled by renderer
   }
 
-  try {
-    let actionFunc
-    if (action.includes("openFile")) actionFunc = () => fileUtils.openFile(keybind.config.filePath);
-    else actionFunc = actions[action];
+  let actionFunc
+  if (action.includes("openFile")) actionFunc = () => fileUtils.openFile(keybind.config.filePath);
+  else actionFunc = actions[action];
 
-    boundKeys[keys] = actionFunc;
-    console.log("Registered: ", keys);
-    return true;
-  } catch (e) {
-    console.log(e);
-    window.webContents.send("message", { message: "Could not register keybind: " + keys, success: false });
-    return false;
-  }
+  boundKeys[keys] = actionFunc;
+  console.log("Registered: ", keys);
+  return true;
 }
