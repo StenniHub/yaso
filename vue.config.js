@@ -9,12 +9,7 @@ module.exports = {
       nodeIntegration: false,
       externals: ["node-global-key-listener"],
       builderOptions: {
-        extraResources: [
-          {
-            from:"node_modules/node-global-key-listener/bin/WinKeyServer.exe",
-            to: "WinKeyServer.exe"
-          }
-        ]
+        extraResources: []
       }
     }
   }

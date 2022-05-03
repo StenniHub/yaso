@@ -6,14 +6,9 @@ import { GlobalKeyboardListener } from 'node-global-key-listener';
 import Path from "path";
 
 // Electron globalShortcut does not work during exclusive fullscreen, using node-global-key-listener instead
-
-const isDevelopment = process.env.NODE_ENV !== "production";
-let serverPath = Path.join(process.resourcesPath, "WinKeyServer.exe");
-if (isDevelopment) {
-  serverPath = "node_modules/node-global-key-listener/bin/WinKeyServer.exe";
-}
-
-const keyListener = new GlobalKeyboardListener({ windows: { serverPath: serverPath }});
+const isProduction = process.env.NODE_ENV === "production";
+const windowsOptions = isProduction ? { serverPath: Path.join(__dirname, "node_modules/node-global-key-listener/bin/WinKeyServer.exe") } : {};
+const keyListener = new GlobalKeyboardListener({ windows: windowsOptions });
 const modifiers = ["META", "CTRL", "ALT", "SHIFT"];
 const separator = " + ";
 const boundKeys = {};
