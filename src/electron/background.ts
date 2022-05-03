@@ -6,7 +6,6 @@ import { window, createWindow } from "./window";
 import * as keyUtils from "./utils/keyutils";
 import * as fileUtils from "./utils/fileutils";
 import * as messageUtils from "./utils/messageUtils";
-import iohook from "iohook";  // Note: iohook requires Visual C++ Redistributable
 import { applyMigrations } from "./migration";
 
 const isDevelopment = process.env.NODE_ENV !== "production";
@@ -90,7 +89,7 @@ function initApp(): void {
     applyMigrations();
 
     createWindow();
-    iohook.start(false);
+    keyUtils.initKeyListener();
 
     // Resize window
     const session = fileUtils.readConfig("session");
