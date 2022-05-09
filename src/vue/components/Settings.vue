@@ -10,7 +10,18 @@
     </v-row>
 
     <v-row class="settings-row">
-      <v-col cols="6">
+      <v-col cols="1" />
+      <v-col cols="3">
+        <v-checkbox v-model.number="modified.useProfiles" />
+      </v-col>
+      <v-col>
+        <p>Use profiles for each game</p>
+      </v-col>
+    </v-row>
+
+    <v-row class="settings-row">
+      <v-col cols="1" />
+      <v-col cols="3">
         <v-checkbox v-model.number="modified.disableDrag" />
       </v-col>
       <v-col>

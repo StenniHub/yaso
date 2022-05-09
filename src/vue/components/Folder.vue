@@ -176,10 +176,11 @@ const Folder = Vue.extend({
       if (lastElement.isOpen) lastElement.selectLast();
       else lastElement.select(true);
     },
-    refresh() {
+    async refresh(): Promise<unknown> {
       this.isOpen = true;
-      invoke("readDir", this.path).then((files: FileObject[]) => {
+      return invoke("readDir", this.path).then((files: FileObject[]) => {
         this.files = files;
+        
         for (const file of files) {
           if (this.isFileSelected(file) || this.isFileOnSelectionPath(file)) {
             this.selectedFile = file;

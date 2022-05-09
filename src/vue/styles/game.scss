@@ -14,6 +14,16 @@
     }
 }
 
+.game-settings {
+    position: absolute;
+    right: 0.5rem;
+    top: 1rem;
+
+    > * {
+        margin-right: 0.5rem;
+    }
+}
+
 .img-title {
     position: absolute;
     width: 100%;
@@ -45,7 +55,17 @@
 }
 
 .game-header {
-    margin: 0.5rem 3rem 0.5rem 1.5rem;
+    margin: 0.5rem 6rem 0.5rem 1.5rem;
+    min-height: 3rem;
+    max-height: 3rem;
+    display: flex;
+    align-items: center;
+
+    > * {
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
 }
 
 #root-folder {
@@ -106,8 +126,15 @@
 }
 
 .context-menu {
-    width: 140px;
+    min-width: 140px;
     padding: 0;
+
+    &.centered {
+        .v-list-item__title {
+            display: flex;
+            justify-content: center;
+        }
+    }
 
     .v-list-item {
         min-height: 2.5rem;
