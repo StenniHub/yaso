@@ -10,11 +10,11 @@
         </template>
 
         <v-list class="context-menu centered">
-          <v-list-item v-if="profile != null" @click="selectProfile(null)">
+          <v-list-item v-if="getProfile() != null" @click="selectProfile(null)">
             <v-list-item-title>(no profile)</v-list-item-title>
           </v-list-item>
           
-          <v-list-item v-for="profile in profiles.filter(prof => prof != profile)" :key="profile" @click="selectProfile(profile)">
+          <v-list-item v-for="profile in profiles.filter(profile => profile != getProfile())" :key="profile" @click="selectProfile(profile)">
             <v-list-item-title>{{profile}}</v-list-item-title>
           </v-list-item>
 
@@ -35,7 +35,7 @@
     <v-img class="background-image" :src="images[game.img]" />
 
     <div class="game-header">
-      <h2>{{ profile || game.title }}</h2>
+      <h2>{{ getProfile() || game.title }}</h2>
     </div>
 
     <v-container v-if="validSettings" id="root-folder">
@@ -74,11 +74,14 @@ export default {
     profile: null
   }),
   computed: {
+    gameId(): string {
+      return this.$route.params.id;
+    },
     useProfiles(): boolean {
       return this.session && this.session.useProfiles;
     },
     path(): string {
-      if (this.profile != null) return this.game.backups + "\\" + this.profile;
+      if (this.getProfile()) return this.game.backups + "\\" + this.profile;
 
       return this.game.backups;
     },
@@ -141,7 +144,7 @@ export default {
           this.game.savefile = output.savefile;
           this.game.backups = output.backups;
           this.saveGames();
-          this.refresh().then(this.autoSelectProfile);
+          this.refresh().then(this.loadProfiles);
         }
       });
     },
@@ -149,10 +152,16 @@ export default {
       this.$refs.profileDialog[0].open().then(output => {
         const profile = output && output.profile;
         if (profile != null) invoke("createFolder", this.game.backups + "\\" + profile).then(() => {
-          this.profiles.push(profile);  // TODO: Resort
+          this.profiles.push(profile);
+          this.profiles.sort();
           this.selectProfile(profile);
         });
       });
+    },
+    getProfile(): string {
+      if (!this.profiles.some(prof => prof === this.profile)) return null;
+
+      return this.profile;
     },
     newFolder(): void {  // TODO: If no folder is selected should add to profiles too
       this.$refs.folderDialog[0].open().then(output => {
@@ -173,26 +182,41 @@ export default {
     refreshSelected(): void {
       invoke("refreshSelected");  // TODO: Very roundabout way of triggering event, can we do this directly instead? (this.$root does not have removeAllListeners)
     },
+    saveConfig(): void {
+      const config = {
+        "profile": this.profile
+      }
+
+      localStorage[this.gameId] = JSON.stringify(config);
+    },
     selectProfile(profile: string) {
+      if (!this.profiles.some(prof => prof === profile)) profile = null;
+
+      this.selectFile({ folder: null, file: null });
       this.profile = profile;
+      this.saveConfig();
       this.refresh();
     },
-    autoSelectProfile() {
-      if (this.useProfiles) {
-        this.profiles = this.files.filter(file => file.isFolder).map(folder => folder.name);
-        const firstProfile = (this.profiles.length && this.profiles[0]) || null;
-        this.selectProfile(this.profile || firstProfile);
-      }
+    loadProfiles() {
+      if (!this.useProfiles) return;
+
+      this.profiles = this.files.filter(file => file.isFolder).map(folder => folder.name);
+      if (this.getProfile()) this.refresh();
     }
   },
   created(): void {
-    this.selectGame(this.$route.params.id);
+    this.selectGame(this.gameId);
+    if (localStorage[this.gameId]) {
+      // Write each value individually in case the parameter names change
+      const savedConfig = JSON.parse(localStorage[this.gameId]);
+      this.profile = savedConfig.profile;
+    }
   },
   mounted(): void {
     if (!this.validSettings) {
       this.editSettings();
     } else {
-      this.refresh().then(this.autoSelectProfile);
+      this.refresh().then(this.loadProfiles);
     }
   },
   destroyed(): void {
