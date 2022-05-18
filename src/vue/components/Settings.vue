@@ -1,7 +1,7 @@
 <template>
   <v-container fluid class="main-container">
     <v-row class="settings-row">
-      <v-col cols="6">
+      <v-col cols="4">
         <v-text-field outlined ref="zoom" v-model.number="modified.zoom" :rules="[zoom => zoom >= 0.5 && zoom <= 1.5]" />
       </v-col>
       <v-col>
@@ -10,18 +10,16 @@
     </v-row>
 
     <v-row class="settings-row">
-      <v-col cols="1" />
-      <v-col cols="3">
+      <v-col cols="4">
         <v-checkbox v-model.number="modified.useProfiles" />
       </v-col>
       <v-col>
-        <p>Use profiles for each game</p>
+        <p>Enable game profiles</p>
       </v-col>
     </v-row>
 
     <v-row class="settings-row">
-      <v-col cols="1" />
-      <v-col cols="3">
+      <v-col cols="4">
         <v-checkbox v-model.number="modified.disableDrag" />
       </v-col>
       <v-col>

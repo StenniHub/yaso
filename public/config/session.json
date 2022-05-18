@@ -1,5 +1,8 @@
 {
-    "game": null,
+    "version": "1.2.2",
     "alwaysOnTop": false,
-    "zoom": 1.0
+    "zoom": 0.9,
+    "windowSize": "400x600",
+    "game": null,
+    "useProfiles": true
 }

@@ -39,11 +39,18 @@ export function readDir(path: string): FileObject[] {
   return files;
 }
 
+export function readBaseConfig(filename: string): Record<string, any> {
+  const filePath = path.join(__static, "config", filename + ".json");
+  return JSON.parse(fs.readFileSync(filePath, { encoding: "utf-8" }));
+}
+
 export function readConfig(filename: string): Record<string, any> {
   const filePath = path.join(configPath, filename + ".json");
   
   if (notExists(filePath)) {
-    fs.copyFileSync(path.join(__static, "config", filename + ".json"), filePath);
+    const config = readBaseConfig(filename);
+    saveConfig(filename, config);
+    return config;
   }
 
   return JSON.parse(fs.readFileSync(filePath, { encoding: "utf-8" }));

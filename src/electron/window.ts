@@ -11,7 +11,7 @@ export let window: BrowserWindow | null;
 export function createWindow(): BrowserWindow {
   // Create the browser window.
   window = new BrowserWindow({
-    width: 450,
+    width: 400,
     height: 600,
     frame: false,
     fullscreenable: false,
