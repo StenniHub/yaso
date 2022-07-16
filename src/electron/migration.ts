@@ -1,36 +1,43 @@
 import { actionsById } from "@/common/actions";
 import { clone } from "@/common/utils";
 import * as fileUtils from "./utils/fileutils";
+import { version } from "@/../package.json";
 
 export function applyMigrations(): void {
   const session = fileUtils.readConfig("session");
+  if (session.version === version) return;
+
   if (session.version == null) {
-    migrate_1_1_1(session);
+    migrate_1_1_1();
+    session.version = "1.1.1";
   }
+
+  const parsedVersion = parseVersion(session.version);
+
+  if (parsedVersion < 122) {
+    session.useProfiles = true;
+  }
+
+  session.version = version;
+  fileUtils.saveConfig("session", session);
 }
 
-function migrate_1_1_1(session): void {
-  session.version = "1.1.1";
+function parseVersion(versionString: string): number {
+  const numbers: number[] = versionString.split(".").map(Number);
+  return numbers.reduce((a, b, idx) => a + 10 ** (2 - idx) * b, 0);
+}
+
+function migrate_1_1_1(): void {
   addEldenRing();
   migrateKeybindsToList();
-  fileUtils.saveConfig("session", session);
 }
 
 function addEldenRing(): void {
   const games = fileUtils.readConfig("games");
   if (games.er != null) return;
-  
-  games.er = {
-    "title": "Elden Ring",
-    "selected": {
-      "folder": null,
-      "file": null
-    },
-    "savefile": null,
-    "backups": null,
-    "img": "er.jpg"
-  }
 
+  const baseGames = fileUtils.readBaseConfig("games");
+  games.er = baseGames.er;
   fileUtils.saveConfig("games", games);
 }
 

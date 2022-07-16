@@ -42,15 +42,16 @@ const File = Vue.extend({
   methods: {
     ...mapActions(["selectFile"]),
     select(isKeyEvent: boolean): void {
-      if (isKeyEvent) this.scrollTo();
+      if (this.isSelected) {
+        this.deselect();
+        return;
+      }
       
-      if (!this.isSelected) {
-        this.selectFile({ folder: this.dir, file: this.name });
-        this.$emit("parent", "selectFileByName", { name: this.name });
-        this.refreshListeners();
-      } else {
-        this.selectFile({ folder: null, file: null });
-      }     
+      this.selectFile({ folder: this.dir, file: this.name });
+      this.$emit("parent", "selectFileByName", { name: this.name });
+      this.refreshListeners();
+      
+      if (isKeyEvent) this.scrollTo();
     },
     deselect() {
       if (this.isSelected) {
@@ -85,8 +86,8 @@ const File = Vue.extend({
     },
     refreshListeners(): void {
       removeAllListeners();
-      ipcRenderer.on("selectNext", () => this.selectNext());
-      ipcRenderer.on("selectPrevious", () => this.selectPrevious());
+      ipcRenderer.on("selectNext", this.selectNext);
+      ipcRenderer.on("selectPrevious", this.selectPrevious);
       ipcRenderer.on("refreshSelected", () => this.$emit("parent", "refresh"));
     },
     scrollTo(): void {

@@ -101,15 +101,24 @@ const Folder = Vue.extend({
       return (this.game.selected.folder + "\\").startsWith(file.path + "\\");
     },
     select(keyEvent: boolean): void {
-      if (keyEvent) this.scrollTo();
-      else this.toggleFolder();
+      if (this.isSelected && this.isOpen) {
+        this.deselect();
+        return;
+      }
 
-      const selectedPath = this.isSelected && !this.isOpen ? null : this.path;
-      this.selectFile({ folder: selectedPath, file: null });
       this.selectedFile = null;
+      this.selectFile({ folder: this.path, file: null });
       this.refreshListeners();
-
       if (!this.isRoot) this.$emit("parent", "selectFileByName", { name: this.name });
+
+      if (keyEvent) this.scrollTo();
+      else this.open();
+    },
+    deselect(): void {
+      removeAllListeners();
+      this.selectedFile = null;
+      this.selectFile({ folder: null, file: null });
+      this.close();
     },
     open(): void {
       this.isOpen = true;
@@ -119,8 +128,8 @@ const Folder = Vue.extend({
       this.isOpen = false;
     },
     toggleFolder(): void {
-      if (!this.isOpen) this.open();
-      else if (this.isSelected) this.close();
+      if (this.isOpen) this.close();
+      else this.open();
     },
     selectNextFromParent() {
       this.selectedFile = null;
@@ -176,10 +185,11 @@ const Folder = Vue.extend({
       if (lastElement.isOpen) lastElement.selectLast();
       else lastElement.select(true);
     },
-    refresh() {
+    async refresh(): Promise<unknown> {
       this.isOpen = true;
-      invoke("readDir", this.path).then((files: FileObject[]) => {
+      return invoke("readDir", this.path).then((files: FileObject[]) => {
         this.files = files;
+        
         for (const file of files) {
           if (this.isFileSelected(file) || this.isFileOnSelectionPath(file)) {
             this.selectedFile = file;
@@ -191,8 +201,8 @@ const Folder = Vue.extend({
     refreshListeners(): void {
       // TODO: Mixins does not allow calling super methods. Enforce inheritance some other way or wait for Vue 3 to mature?
       removeAllListeners();
-      ipcRenderer.on("selectNext", () => this.selectNext());
-      ipcRenderer.on("selectPrevious", () => this.selectPrevious());
+      ipcRenderer.on("selectNext", this.selectNext);
+      ipcRenderer.on("selectPrevious", this.selectPrevious);
       ipcRenderer.on("refreshSelected", this.refresh);
       ipcRenderer.on("toggleFolder", this.toggleFolder);
     },
@@ -210,7 +220,6 @@ const Folder = Vue.extend({
   },
   mounted(): void {
     this.contextOptions.unshift({ name: "Refresh", action: this.refresh })
-
     if (this.isOnSelectionPath) this.open();
   }
 });

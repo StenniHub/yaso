@@ -1,7 +1,7 @@
 <template>
   <v-container fluid class="main-container">
     <v-row class="settings-row">
-      <v-col cols="6">
+      <v-col cols="4">
         <v-text-field outlined ref="zoom" v-model.number="modified.zoom" :rules="[zoom => zoom >= 0.5 && zoom <= 1.5]" />
       </v-col>
       <v-col>
@@ -10,11 +10,26 @@
     </v-row>
 
     <v-row class="settings-row">
-      <v-col cols="6">
+      <v-col cols="4">
+        <v-checkbox v-model.number="modified.useProfiles" />
+      </v-col>
+      <v-col>
+        <p>Enable game profiles</p>
+      </v-col>
+    </v-row>
+
+    <v-row class="settings-row">
+      <v-col cols="4">
         <v-checkbox v-model.number="modified.disableDrag" />
       </v-col>
       <v-col>
         <p>Disable dragging of files and folders</p>
+      </v-col>
+    </v-row>
+
+    <v-row class="settings-row">
+      <v-col>
+        <v-btn @click="clearCache" :disabled="cacheEntries < 1">Clear Cache</v-btn>
       </v-col>
     </v-row>
 
@@ -27,6 +42,7 @@
 
 <script lang="ts">
 import { mapActions, mapState } from "vuex";
+import { invoke } from "../utils/ipcUtils";
 import IconButton from "./IconButton.vue";
 
 function deepCopy(input: Record<string, unknown>): Record<string, unknown> {
@@ -36,6 +52,7 @@ function deepCopy(input: Record<string, unknown>): Record<string, unknown> {
 export default {
   components: { IconButton },
   data: (): Record<string, unknown> => ({
+    cacheEntries: localStorage.length,
     modified: {}
   }),
   computed: {    
@@ -59,6 +76,11 @@ export default {
     },
     validateSettings(): boolean {
       return Object.values(this.$refs).every((setting: any) => setting.validate());
+    },
+    clearCache(): void {
+      localStorage.clear();
+      this.cacheEntries = localStorage.length;
+      invoke("successMsg", "Cache cleared");
     }
   },
   mounted(): void {

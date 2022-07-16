@@ -48,5 +48,15 @@
         "savefile": null,
         "backups": null,
         "img": "ds3.jpg"
+    },
+    "er": {
+        "title": "Elden Ring",
+        "selected": {
+          "folder": null,
+          "file": null
+        },
+        "savefile": null,
+        "backups": null,
+        "img": "er.jpg"
     }
 }
