@@ -27,6 +27,12 @@
       </v-col>
     </v-row>
 
+    <v-row class="settings-row">
+      <v-col>
+        <v-btn @click="clearCache" :disabled="cacheEntries < 1">Clear Cache</v-btn>
+      </v-col>
+    </v-row>
+
     <div class="button-footer">
       <icon-button icon="mdi-close" :onClick="reset" tooltip="Discard changes" :disabled="!isModified" />
       <icon-button icon="mdi-check" :onClick="save" tooltip="Save changes" :disabled="!isModified" />
@@ -36,6 +42,7 @@
 
 <script lang="ts">
 import { mapActions, mapState } from "vuex";
+import { invoke } from "../utils/ipcUtils";
 import IconButton from "./IconButton.vue";
 
 function deepCopy(input: Record<string, unknown>): Record<string, unknown> {
@@ -45,6 +52,7 @@ function deepCopy(input: Record<string, unknown>): Record<string, unknown> {
 export default {
   components: { IconButton },
   data: (): Record<string, unknown> => ({
+    cacheEntries: localStorage.length,
     modified: {}
   }),
   computed: {    
@@ -68,6 +76,11 @@ export default {
     },
     validateSettings(): boolean {
       return Object.values(this.$refs).every((setting: any) => setting.validate());
+    },
+    clearCache(): void {
+      localStorage.clear();
+      this.cacheEntries = localStorage.length;
+      invoke("successMsg", "Cache cleared");
     }
   },
   mounted(): void {
