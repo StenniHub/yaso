@@ -33,7 +33,7 @@
 </template>
 
 <script lang="ts">
-import { invoke, selectFile } from "@/vue/utils/ipcUtils";
+import { invoke } from "@/vue/utils/ipcUtils";
 import { actions, actionsById } from "@/common/actions";
 import { clone } from "@/common/utils";
 import IconButton from './IconButton.vue';
@@ -78,7 +78,7 @@ export default {
     },
     selectFile(keybind: Record<string, unknown>, key: string): void {
       const config = keybind.config
-      selectFile(config[key]).then(result => {
+      invoke("selectFile", config[key]).then(result => {
         if (result != null) {
           config[key] = result;
           this.bindKeys(keybind, keybind.keys);

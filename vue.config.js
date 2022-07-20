@@ -9,7 +9,17 @@ module.exports = {
       nodeIntegration: false,
       externals: ["node-global-key-listener"],
       builderOptions: {
-        extraResources: []
+        extraResources: [],
+        win: {
+          'signAndEditExecutable': false,
+          target: ['nsis', 'portable']
+        },
+        nsis: {
+          artifactName: '${name}-${version}.exe'
+        },
+        portable: {
+          artifactName: '${name}-${version}-portable.exe'
+        }
       }
     }
   }

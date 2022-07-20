@@ -26,7 +26,7 @@
 
 <script lang="ts">
 import Vue from "vue";
-import { selectFile, selectFolder } from "@/vue/utils/ipcUtils";
+import { invoke } from "@/vue/utils/ipcUtils";
 import IconButton from './IconButton.vue';
 
 export default {
@@ -97,10 +97,10 @@ export default {
       if (value != null) Vue.set(this.output, key, value);
     },
     selectFile(key: string): void {
-      selectFile(this.output[key]).then(result => this.setNonNull(key, result));
+      invoke("selectFile", this.output[key]).then(result => this.setNonNull(key, result));
     },
     selectFolder(key: string): void {
-      selectFolder(this.output[key]).then(result => this.setNonNull(key, result));
+      invoke("selectFolder", this.output[key]).then(result => this.setNonNull(key, result));
     },
     onRemove(): void {
       this.remove.func();
