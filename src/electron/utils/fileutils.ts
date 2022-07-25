@@ -111,9 +111,15 @@ export function rename(fromPath: string, toPath: string): void {
   fs.renameSync(fromPath, toPath);
 }
 
-export function remove(path: string): Promise<void> {
+export async function remove(path: string): Promise<void> {
   path = toAbsolutePath(path);
-  return trash(path);
+
+  if (isPortable && !path.startsWith("C:\\")) {
+    fs.rmSync(path, { recursive: true });  // Trash does not seem to work on a USB stick
+    return;
+  }
+
+  await trash(path);
 }
 
 export function revealInExplorer(path: string): void {

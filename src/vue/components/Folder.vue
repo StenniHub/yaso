@@ -141,30 +141,28 @@ const Folder = Vue.extend({
     },
     selectNext(): void {
       const files = this.files;
-      const selectedFile = this.selectedFile;
+      const selectedIdx = this.getSelectedIdx();
 
-      if (selectedFile == null) {
+      if (selectedIdx == -1) {
         if (this.isOpen && files.length > 0) this.selectFileElement(files[0]);
         else if (!this.isRoot) this.selectNextFromParent();
         return;
       }
 
-      const selectedIdx = files.indexOf(selectedFile);
       if (selectedIdx < files.length - 1) this.selectFileElement(files[selectedIdx + 1])
       else if (this.isRoot) this.selectFileElement(files[0])
       else this.selectNextFromParent();
     },
     selectPrevious(): void {
       const files = this.files;
-      const selectedFile = this.selectedFile;
+      const selectedIdx = this.getSelectedIdx();
 
-      if (selectedFile == null) {
+      if (selectedIdx == -1) {
         if (this.isRoot) this.selectLast();
         else this.selectPreviousFromParent();
         return;
       }
 
-      const selectedIdx = files.indexOf(selectedFile);
       if (selectedIdx > 0) {
         const prevElement = this.getFileElement(files[selectedIdx - 1]);
         if (prevElement.isOpen && prevElement.files.length > 0) prevElement.selectLast();
@@ -185,6 +183,10 @@ const Folder = Vue.extend({
       if (lastElement.isOpen) lastElement.selectLast();
       else lastElement.select(true);
     },
+    getSelectedIdx() {
+      if (this.selectedFile == null) return -1;
+      return this.files.findIndex(file => file.name === this.selectedFile);
+    },
     async refresh(): Promise<unknown> {
       this.isOpen = true;
       return invoke("readDir", this.path).then((files: FileObject[]) => {
@@ -192,7 +194,7 @@ const Folder = Vue.extend({
         
         for (const file of files) {
           if (this.isFileSelected(file) || this.isFileOnSelectionPath(file)) {
-            this.selectedFile = file;
+            this.selectedFile = file.name;
             break;
           }
         }
@@ -210,11 +212,12 @@ const Folder = Vue.extend({
       return this.$refs.file.find(element => element.name == file.name);
     },
     selectFileElement(file: FileObject) {
-      this.selectedFile = file;
+      this.selectedFile = file.name;
       this.getFileElement(file).select(true);
     },
     selectFileByName(name: string) {
-      this.selectedFile = this.files.find(file => file.name == name);
+      const selectedFile = this.files.find(file => file.name == name);
+      this.selectedFile = selectedFile != null ? selectedFile.name : null;
       if (!this.isRoot) this.$emit("parent", "selectFileByName", { name: this.name });
     }
   },
