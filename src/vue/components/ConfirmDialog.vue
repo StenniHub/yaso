@@ -1,15 +1,15 @@
 <template>
-  <v-dialog v-model="dialog" persistent v-if="inputs">
+  <v-dialog v-model="dialog" persistent v-if="inputs" @keydown.escape="cancel">
     <v-card class="dialog-card">
       <v-card-title v-if="header" v-text="header" />
 
       <v-card-text v-if="description" v-html="description" />
 
       <div class="dialog-input" v-for="([key, params]) in Object.entries(inputs)" :key="key">
-        <v-text-field outlined v-if="params.type === 'text'" v-model="output[key]" :label="params.label" />
+        <v-text-field outlined v-if="params.type === 'text'" v-model="output[key]" :label="params.label" @keyup.enter="onEnter" autofocus/>
 
         <div class="file-picker" v-if="['file', 'folder'].includes(params.type)">
-          <v-text-field outlined :label="params.label" v-model="output[key]" />
+          <v-text-field outlined :label="params.label" v-model="output[key]" @keyup.enter="onEnter"/>
           <v-icon @click="params.type === 'file' ? selectFile(key) : selectFolder(key)">mdi-folder</v-icon>
         </div>
       </div>
@@ -86,6 +86,8 @@ export default {
       this.closeDialog();
     },
     cancel(): void {
+      if (!this.cancellable) return;
+
       this.resolve(null);
       this.closeDialog();
     },
@@ -105,6 +107,10 @@ export default {
     onRemove(): void {
       this.remove.func();
       this.cancel();
+    },
+    onEnter(): void {
+      if (this.inputs && this.inputs.length > 1) return; // TODO: Deselect input
+      if (this.isValid) this.confirm();
     }
   },
   provide(): Record<string, unknown> {
