@@ -206,7 +206,7 @@ export default {
         if (!this.useProfiles) return;
 
         this.profiles = this.files.filter(file => file.isFolder).map(folder => folder.name);
-        this.profile = selectedProfile;
+        this.selectProfile(selectedProfile);  // Re-select profile after refresh
       });
     },
   },
