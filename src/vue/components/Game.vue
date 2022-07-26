@@ -81,16 +81,13 @@ export default {
       return this.session && this.session.useProfiles;
     },
     path(): string {
-      if (this.getProfile()) return this.game.backups + "\\" + this.profile;
-
-      return this.game.backups;
+      return this.getProfile() ? this.game.backups + "\\" + this.profile : this.game.backups;
     },
     isSelected(): boolean {
       return this.game.selected.folder == null && this.game.selected.file == null;
     },
     canLoadSavefile(): boolean {
       if (this.isSelected) this.refreshListeners();  // TODO: Find a better place to do this
-
       return this.game.selected.file != null;
     },
     validSettings(): boolean {
@@ -140,40 +137,44 @@ export default {
     },
     editSettings(): void {
       this.$refs.settingsDialog[0].open().then(output => {
-        if (output != null) {
-          this.game.savefile = output.savefile;
-          this.game.backups = output.backups;
-          this.saveGames();
-          this.refresh().then(this.loadProfiles);
-        }
+        if (output == null) return;
+
+        this.game.savefile = output.savefile;
+        this.game.backups = output.backups;
+        this.saveGames();
+        this.refreshAll();
       });
     },
     addProfile(): void {
       this.$refs.profileDialog[0].open().then(output => {
-        const profile = output && output.profile;
-        if (profile != null) invoke("createFolder", this.game.backups + "\\" + profile).then(() => {
+        if (output == null || output.profile == null) return;
+
+        const profile = output.profile;
+        const profilePath = this.game.backups + "\\" + profile
+        invoke("createFolder", profilePath).then(() => {
           this.profiles.push(profile);
           this.profiles.sort();
           this.selectProfile(profile);
         });
       });
     },
-    getProfile(): string {
-      if (!this.profiles.some(prof => prof === this.profile)) return null;
-
-      return this.profile;
+    getProfile(): string {  // Only return selected profile if it matches one of the root folders
+      return this.profiles.includes(this.profile) ? this.profile : null;
     },
     newFolder(): void {  // TODO: If no folder is selected should add to profiles too
       this.$refs.folderDialog[0].open().then(output => {
-        const folder = output && output.folder;
-        const basePath = this.game.selected.folder || this.path;
-        if (folder != null) invoke("createFolder", basePath + "\\" + folder).then(this.refreshSelected);
+        if (output == null || output.folder == null) return;
+
+        const folderPath = (this.game.selected.folder || this.path) + output.folder;
+        invoke("createFolder", folderPath).then(this.refreshSelected);
       });
     },
     importSavefile(): void {
       this.$refs.fileDialog[0].open().then(output => {
-        const basePath = this.game.selected.folder || this.path;
-        if (output != null) invoke("copyFile", this.game.savefile, basePath + "\\" + output.file).then(this.refreshSelected);
+        if (output == null) return;
+
+        const backupPath = (this.game.selected.folder || this.path) + "\\" + output.file;
+        invoke("copyFile", this.game.savefile, backupPath).then(this.refreshSelected);
       });
     },
     loadSavefile(): void {
@@ -190,19 +191,24 @@ export default {
       localStorage[this.gameId] = JSON.stringify(config);
     },
     selectProfile(profile: string) {
-      if (!this.profiles.some(prof => prof === profile)) profile = null;
+      if (!this.profiles.includes(profile)) profile = null;
 
       this.selectFile({ folder: null, file: null });
       this.profile = profile;
       this.saveConfig();
       this.refresh();
     },
-    loadProfiles() {
-      if (!this.useProfiles) return;
+    refreshAll() {
+      const selectedProfile = this.profile;
+      this.profile = null;  // Make sure we are at the root folder for loading profiles
 
-      this.profiles = this.files.filter(file => file.isFolder).map(folder => folder.name);
-      if (this.getProfile()) this.refresh();
-    }
+      this.refresh().then(() => {
+        if (!this.useProfiles) return;
+
+        this.profiles = this.files.filter(file => file.isFolder).map(folder => folder.name);
+        this.profile = selectedProfile;
+      });
+    },
   },
   created(): void {
     this.selectGame(this.gameId);
@@ -216,7 +222,7 @@ export default {
     if (!this.validSettings) {
       this.editSettings();
     } else {
-      this.refresh().then(this.loadProfiles);
+      this.refreshAll();
     }
   },
   destroyed(): void {
