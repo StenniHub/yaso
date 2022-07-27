@@ -193,8 +193,8 @@ export default {
     selectProfile(profile: string) {
       if (!this.profiles.includes(profile)) profile = null;
 
-      this.selectFile({ folder: null, file: null });
       this.profile = profile;
+      if (!this.isOnSelectionPath) this.selectFile({ folder: null, file: null });
       this.saveConfig();
       this.refresh();
     },
