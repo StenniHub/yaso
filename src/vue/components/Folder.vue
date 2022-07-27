@@ -222,6 +222,7 @@ const Folder = Vue.extend({
     }
   },
   mounted(): void {
+    this.contextOptions = this.contextOptions.filter(opt => opt.name !== "Replace");  // Not valid for folders
     this.contextOptions.unshift({ name: "Refresh", action: this.refresh })
     if (this.isOnSelectionPath) this.open();
   }

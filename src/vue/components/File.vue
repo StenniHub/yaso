@@ -78,6 +78,9 @@ const File = Vue.extend({
         });
       });
     },
+    replaceFile(): void {
+      invoke("copyFile", this.game.savefile, this.path);
+    },
     deleteFile(): void {
       this.$refs.deleteDialog.open().then(output => {
         this.deselect();
@@ -102,6 +105,7 @@ const File = Vue.extend({
     this.contextOptions = [
       { name: "Reveal in explorer", action: this.revealInExplorer },
       { name: "Rename", action: this.renameFile },
+      { name: "Replace", action: this.replaceFile },
       { name: "Delete", action: this.deleteFile }
     ]
 
