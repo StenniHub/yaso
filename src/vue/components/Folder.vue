@@ -2,7 +2,8 @@
   <div class="file-container" ref="container">
     <file-button ref="fileButton" @click="() => select(false)" :name="name" :icon="icon" :is-selected="isSelected" :contextOptions="contextOptions" />
 
-    <draggable v-show="isOpen" class="folder-content" :class="{ dragging: dragging }" v-bind="draggableProps" v-on="draggableHandlers">
+    <!-- Would prefer v-show here but causes files to be selectable when not visible -->
+    <draggable v-if="isOpen" class="folder-content" :class="{ dragging: dragging }" v-bind="draggableProps" v-on="draggableHandlers">
       <component ref="file" v-for="file in files" :is="getFileComponent(file)" :key="file.name" :dir="path" @parent="onEvent" />
     </draggable>
 
@@ -16,7 +17,7 @@
 import Vue from "vue";
 import File from "./File.vue";
 import { FileObject } from "@/common/files";
-import { ipcRenderer, invoke, removeAllListeners } from "@/vue/utils/ipcUtils";
+import { invoke } from "@/vue/utils/ipcUtils";
 import ConfirmDialog from "./ConfirmDialog.vue";
 import Draggable from "vuedraggable";
 import { mapState, mapMutations } from "vuex";
@@ -26,9 +27,9 @@ const Folder = Vue.extend({
   mixins: [File],
   components: { ConfirmDialog, Draggable },
   data: () => ({
+    isFolder: true,
     isOpen: false,
-    files: [],
-    selectedFile: null
+    files: []
   }),
   computed: {
     isSelected(): boolean {
@@ -69,12 +70,6 @@ const Folder = Vue.extend({
     endDrag(): void {
       this.setDragging(false);
     },
-    onEvent(action: string, payload: Record<string, unknown>) {
-      if (action === "selectNext") this.selectNext();
-      else if (action === "selectPrevious") this.selectPrevious();
-      else if (action === "selectFileByName") this.selectFileByName(payload.name);
-      else if (action === "refresh") this.refresh();
-    },
     async onFileMove(event): Promise<void> {
       // TODO: Can we just revert move events instead of refreshing, and only update on added/removed?
       if (event.added) {
@@ -91,6 +86,9 @@ const Folder = Vue.extend({
 
       this.refresh();
     },
+    onEvent(action: string) {
+      if (action === "refresh") this.refresh();
+    },
     getFileComponent(file: FileObject) {
       return file.isFolder ? Folder : File;
     },
@@ -106,16 +104,11 @@ const Folder = Vue.extend({
         return;
       }
 
-      this.selectedFile = null;
       this.selectFile({ folder: this.path, file: null });
-      this.refreshListeners();
-      if (!this.isRoot) this.$emit("parent", "selectFileByName", { name: this.name });
-
       if (keyEvent) this.scrollTo();
       else this.open();
     },
     deselect(): void {
-      removeAllListeners();
       this.selectedFile = null;
       this.selectFile({ folder: null, file: null });
       this.close();
@@ -131,94 +124,11 @@ const Folder = Vue.extend({
       if (this.isOpen) this.close();
       else this.open();
     },
-    selectNextFromParent() {
-      this.selectedFile = null;
-      this.$emit("parent", "selectNext");
-    },
-    selectPreviousFromParent() {
-      this.selectedFile = null;
-      this.$emit("parent", "selectPrevious");
-    },
-    selectNext(): void {
-      const files = this.files;
-      const selectedIdx = this.getSelectedIdx();
-
-      if (selectedIdx == -1) {
-        if (this.isOpen && files.length > 0) this.selectFileElement(files[0]);
-        else if (!this.isRoot) this.selectNextFromParent();
-        return;
-      }
-
-      if (selectedIdx < files.length - 1) this.selectFileElement(files[selectedIdx + 1])
-      else if (this.isRoot) this.selectFileElement(files[0])
-      else this.selectNextFromParent();
-    },
-    selectPrevious(): void {
-      const files = this.files;
-      const selectedIdx = this.getSelectedIdx();
-
-      if (selectedIdx == -1) {
-        if (this.isRoot) this.selectLast();
-        else this.selectPreviousFromParent();
-        return;
-      }
-
-      if (selectedIdx > 0) {
-        const prevElement = this.getFileElement(files[selectedIdx - 1]);
-        if (prevElement.isOpen && prevElement.files.length > 0) prevElement.selectLast();
-        else prevElement.select(true);
-        return;
-      }
-
-      if (this.isRoot) this.selectLast()
-      else this.select(true);
-    },
-    selectLast() {
-      if (this.files.length === 0) {
-        this.select(true);
-        return;
-      }
-
-      const lastElement = this.getFileElement(this.files[this.files.length - 1]);
-      if (lastElement.isOpen) lastElement.selectLast();
-      else lastElement.select(true);
-    },
-    getSelectedIdx() {
-      if (this.selectedFile == null) return -1;
-      return this.files.findIndex(file => file.name === this.selectedFile);
-    },
     async refresh(): Promise<unknown> {
       this.isOpen = true;
       return invoke("readDir", this.path).then((files: FileObject[]) => {
         this.files = files;
-        
-        for (const file of files) {
-          if (this.isFileSelected(file) || this.isFileOnSelectionPath(file)) {
-            this.selectedFile = file.name;
-            break;
-          }
-        }
       });
-    },
-    refreshListeners(): void {
-      // TODO: Mixins does not allow calling super methods. Enforce inheritance some other way or wait for Vue 3 to mature?
-      removeAllListeners();
-      ipcRenderer.on("selectNext", this.selectNext);
-      ipcRenderer.on("selectPrevious", this.selectPrevious);
-      ipcRenderer.on("refreshSelected", this.refresh);
-      ipcRenderer.on("toggleFolder", this.toggleFolder);
-    },
-    getFileElement(file: FileObject) {
-      return this.$refs.file.find(element => element.name == file.name);
-    },
-    selectFileElement(file: FileObject) {
-      this.selectedFile = file.name;
-      this.getFileElement(file).select(true);
-    },
-    selectFileByName(name: string) {
-      const selectedFile = this.files.find(file => file.name == name);
-      this.selectedFile = selectedFile != null ? selectedFile.name : null;
-      if (!this.isRoot) this.$emit("parent", "selectFileByName", { name: this.name });
     }
   },
   mounted(): void {

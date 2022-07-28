@@ -137,7 +137,6 @@ function initApp(): void {
 
   ipcMain.handle("move", (event: Event, fromPath: string, toPath: string) => fileUtils.rename(fromPath, toPath));
   ipcMain.handle("remove", (event: Event, path: string) => fileUtils.remove(path));
-  ipcMain.handle("refreshSelected", () => window.webContents.send("refreshSelected"));
 
   ipcMain.handle("minimizeWindow", () => window.minimize());
   ipcMain.handle("closeWindow", () => window.close());

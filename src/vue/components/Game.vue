@@ -59,7 +59,7 @@
 
 <script lang="ts">
 import { mapActions, mapState } from "vuex";
-import { invoke, removeAllListeners } from "@/vue/utils/ipcUtils";
+import { ipcRenderer, invoke } from "@/vue/utils/ipcUtils";
 import ConfirmDialog from "./ConfirmDialog.vue";
 import IconButton from "./IconButton.vue";
 import Folder from "./Folder.vue";
@@ -69,9 +69,9 @@ export default {
   components: { ConfirmDialog, IconButton, Draggable },
   mixins: [Folder],  // Makes the game view act as a root folder, but with overriden template and logic
   data: (): Record<string, unknown> => ({
-    isRoot: true,
     profiles: [],
-    profile: null
+    profile: null,
+    pressedKeys: new Set()
   }),
   computed: {
     gameId(): string {
@@ -84,10 +84,9 @@ export default {
       return this.getProfile() ? this.game.backups + "\\" + this.profile : this.game.backups;
     },
     isSelected(): boolean {
-      return this.game.selected.folder == null && this.game.selected.file == null;
+      return false;  // Cannot select root folder
     },
     canLoadSavefile(): boolean {
-      if (this.isSelected) this.refreshListeners();  // TODO: Find a better place to do this
       return this.game.selected.file != null;
     },
     validSettings(): boolean {
@@ -129,11 +128,36 @@ export default {
   },
   methods: {
     ...mapActions(["selectGame", "saveGames"]),
-    open(): void {
-      // Do nothing
+    getFileComponents() {  // Can we declare File/Folder component as a type?
+      const fileElements = Array.from(document.getElementsByClassName("file-container"));
+      return fileElements.map(el => el["__vue__"]);
     },
-    close(): void {
-      // Do nothing
+    getSelectedFile() {
+      return this.getFileComponents().find(file => file.isSelected);
+    },
+    getSelectedIdx(): number {  // Inefficient if we have a lot of files?
+      return this.getFileComponents().findIndex(file => file.isSelected);
+    },
+    selectNext(): void {
+      const fileComponents = this.getFileComponents();
+      if (fileComponents.length == 0) return;
+
+      const nextIdx = (this.getSelectedIdx() + 1) % fileComponents.length;
+      fileComponents[nextIdx].select(true);
+    },
+    selectPrevious(): void {
+      const fileComponents = this.getFileComponents();
+      if (fileComponents.length == 0) return;
+
+      const selectedIdx = this.getSelectedIdx();
+      const prevIdx = selectedIdx > 0 ? selectedIdx - 1 : fileComponents.length - 1;
+      fileComponents[prevIdx].select(true);
+    },
+    toggleFolder(): void {
+      const selectedFile = this.getSelectedFile();
+      if (selectedFile == null || !selectedFile.isFolder) return;
+
+      selectedFile.toggleFolder();
     },
     editSettings(): void {
       this.$refs.settingsDialog[0].open().then(output => {
@@ -165,7 +189,7 @@ export default {
       this.$refs.folderDialog[0].open().then(output => {
         if (output == null || output.folder == null) return;
 
-        const folderPath = (this.game.selected.folder || this.path) + output.folder;
+        const folderPath = (this.game.selected.folder || this.path) + "\\" + output.folder;
         invoke("createFolder", folderPath).then(this.refreshSelected);
       });
     },
@@ -181,7 +205,37 @@ export default {
       invoke("loadSavefile");
     },
     refreshSelected(): void {
-      invoke("refreshSelected");  // TODO: Very roundabout way of triggering event, can we do this directly instead? (this.$root does not have removeAllListeners)
+      const selectedFile = this.getSelectedFile();
+      if (selectedFile == null) this.refresh();
+      else selectedFile.refresh();
+    },
+    refreshListeners(): void {
+      this.removeListeners();
+      ipcRenderer.on("selectNext", this.selectNext);
+      ipcRenderer.on("selectPrevious", this.selectPrevious);
+      ipcRenderer.on("toggleFolder", this.toggleFolder);
+
+      window.addEventListener("keydown", this.onKeyDown);
+      window.addEventListener("keyup", this.onKeyUp);
+    },
+    removeListeners(): void {
+      ipcRenderer.removeAllListeners("selectNext");
+      ipcRenderer.removeAllListeners("selectPrevious");
+      ipcRenderer.removeAllListeners("toggleFolder");
+
+      window.removeEventListener("keydown", this.onKeyDown);
+      window.removeEventListener("keyup", this.onKeyUp);
+    },
+    onKeyDown(event: KeyboardEvent): void {
+      this.pressedKeys.add(event.key);
+      if (this.pressedKeys.size > 1) return;
+
+      if (event.key === "Enter") this.toggleFolder();
+      else if (event.key === "ArrowDown") this.selectNext();
+      else if (event.key === "ArrowUp") this.selectPrevious();
+    },
+    onKeyUp(event: KeyboardEvent): void {
+      this.pressedKeys.delete(event.key);
     },
     saveConfig(): void {
       const config = {
@@ -190,7 +244,8 @@ export default {
 
       localStorage[this.gameId] = JSON.stringify(config);
     },
-    selectProfile(profile: string) {
+    selectProfile(profile: string): void {
+      if (this.profile == profile) return;
       if (!this.profiles.includes(profile)) profile = null;
 
       this.profile = profile;
@@ -198,7 +253,7 @@ export default {
       this.saveConfig();
       this.refresh();
     },
-    refreshAll() {
+    refreshAll(): void {
       const selectedProfile = this.profile;
       this.profile = null;  // Make sure we are at the root folder for loading profiles
 
@@ -208,7 +263,7 @@ export default {
         this.profiles = this.files.filter(file => file.isFolder).map(folder => folder.name);
         this.selectProfile(selectedProfile);  // Re-select profile after refresh
       });
-    },
+    }
   },
   created(): void {
     this.selectGame(this.gameId);
@@ -224,9 +279,11 @@ export default {
     } else {
       this.refreshAll();
     }
+
+    this.refreshListeners();
   },
   destroyed(): void {
-    removeAllListeners();
+    this.removeListeners();
   }
 };
 </script>
