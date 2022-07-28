@@ -70,7 +70,8 @@ export default {
   mixins: [Folder],  // Makes the game view act as a root folder, but with overriden template and logic
   data: (): Record<string, unknown> => ({
     profiles: [],
-    profile: null
+    profile: null,
+    pressedKeys: new Set()
   }),
   computed: {
     gameId(): string {
@@ -213,11 +214,28 @@ export default {
       ipcRenderer.on("selectNext", this.selectNext);
       ipcRenderer.on("selectPrevious", this.selectPrevious);
       ipcRenderer.on("toggleFolder", this.toggleFolder);
+
+      window.addEventListener("keydown", this.onKeyDown);
+      window.addEventListener("keyup", this.onKeyUp);
     },
     removeListeners(): void {
       ipcRenderer.removeAllListeners("selectNext");
       ipcRenderer.removeAllListeners("selectPrevious");
       ipcRenderer.removeAllListeners("toggleFolder");
+
+      window.removeEventListener("keydown", this.onKeyDown);
+      window.removeEventListener("keyup", this.onKeyUp);
+    },
+    onKeyDown(event: KeyboardEvent): void {
+      this.pressedKeys.add(event.key);
+      if (this.pressedKeys.size > 1) return;
+
+      if (event.key === "Enter") this.toggleFolder();
+      else if (event.key === "ArrowDown") this.selectNext();
+      else if (event.key === "ArrowUp") this.selectPrevious();
+    },
+    onKeyUp(event: KeyboardEvent): void {
+      this.pressedKeys.delete(event.key);
     },
     saveConfig(): void {
       const config = {
@@ -226,7 +244,7 @@ export default {
 
       localStorage[this.gameId] = JSON.stringify(config);
     },
-    selectProfile(profile: string) {
+    selectProfile(profile: string): void {
       if (this.profile == profile) return;
       if (!this.profiles.includes(profile)) profile = null;
 
@@ -235,7 +253,7 @@ export default {
       this.saveConfig();
       this.refresh();
     },
-    refreshAll() {
+    refreshAll(): void {
       const selectedProfile = this.profile;
       this.profile = null;  // Make sure we are at the root folder for loading profiles
 
@@ -245,7 +263,7 @@ export default {
         this.profiles = this.files.filter(file => file.isFolder).map(folder => folder.name);
         this.selectProfile(selectedProfile);  // Re-select profile after refresh
       });
-    },
+    }
   },
   created(): void {
     this.selectGame(this.gameId);
