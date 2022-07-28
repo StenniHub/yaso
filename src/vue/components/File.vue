@@ -10,7 +10,7 @@
 <script lang="ts">
 import Vue from "vue";
 import { mapState, mapActions } from "vuex";
-import { ipcRenderer, invoke, removeAllListeners } from "@/vue/utils/ipcUtils";
+import { invoke } from "@/vue/utils/ipcUtils";
 import { scrollToElement } from "@/vue/utils/domUtils";
 import FileButton from "./FileButton.vue";
 import ConfirmDialog from "./ConfirmDialog.vue";
@@ -23,7 +23,7 @@ const File = Vue.extend({
   },
   data: (): Record<string, unknown> => ({
     contextOptions: [],
-    isRoot: false
+    isFolder: false
   }),
   computed: {
     name(): string {
@@ -48,22 +48,12 @@ const File = Vue.extend({
       }
       
       this.selectFile({ folder: this.dir, file: this.name });
-      this.$emit("parent", "selectFileByName", { name: this.name });
-      this.refreshListeners();
-      
       if (isKeyEvent) this.scrollTo();
     },
     deselect() {
       if (this.isSelected) {
         this.selectFile({ folder: null, file: null });
-        removeAllListeners();
       }
-    },
-    selectNext(): void {
-      if (this.isSelected) this.$emit("parent", "selectNext");
-    },
-    selectPrevious(): void {
-      if (this.isSelected) this.$emit("parent", "selectPrevious");
     },
     revealInExplorer(): void {
       invoke("revealInExplorer", this.path);
@@ -74,7 +64,7 @@ const File = Vue.extend({
 
         invoke("move", this.path, this.dir + "\\" + output.name).then(() => {
           this.deselect();  // Deselect to prevent attempt to load non-existing file
-          this.$emit("parent", "refresh");
+          this.refreshParent();
         });
       });
     },
@@ -84,14 +74,8 @@ const File = Vue.extend({
     deleteFile(): void {
       this.$refs.deleteDialog.open().then(output => {
         this.deselect();
-        if (output != null) invoke("remove", this.path).then(() => this.$emit("parent", "refresh"));
+        if (output != null) invoke("remove", this.path).then(this.refreshParent);
       });
-    },
-    refreshListeners(): void {
-      removeAllListeners();
-      ipcRenderer.on("selectNext", this.selectNext);
-      ipcRenderer.on("selectPrevious", this.selectPrevious);
-      ipcRenderer.on("refreshSelected", () => this.$emit("parent", "refresh"));
     },
     scrollTo(): void {
       scrollToElement(document.getElementById("root-folder"), this.$refs.fileButton.$el);
@@ -99,6 +83,9 @@ const File = Vue.extend({
     openMenu(event, menuActivator) {
       this.$refs.container.click(event);  // Click somewhere else first to close existing menus
       menuActivator.click(event);
+    },
+    refreshParent(): void {
+      this.$emit("parent", "refresh");
     }
   },
   mounted(): void {
@@ -109,10 +96,7 @@ const File = Vue.extend({
       { name: "Delete", action: this.deleteFile }
     ]
 
-    if (this.isSelected) {
-      this.refreshListeners();
-      if (!this.isRoot) setTimeout(this.scrollTo, 0);  // Does not work without tiny delay
-    }
+    if (this.isSelected) setTimeout(this.scrollTo, 0);  // Does not work without tiny delay
   }
 });
 
