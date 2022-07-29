@@ -4,8 +4,10 @@
     justify-content: center;
 
     .v-card {
-        width: 400px;
-        margin: 0.5rem;
+        width: 100vw;
+        max-width: calc(400px + 2rem);
+        padding: 0.5rem 1rem;
+        background: none;
 
         .v-image, .v-responsive__sizer {
             height: 200px;

@@ -173,6 +173,11 @@ a {
 .main-container {
     position: relative;
     height: 100%;
+    margin-top: 1rem;
+
+    &.small {
+        max-width: 500px;
+    }
 
     > h4 {
         text-align: center;

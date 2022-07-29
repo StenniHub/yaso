@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid class="main-container">
+  <v-container fluid class="main-container small">
     <v-row class="settings-row">
       <v-col cols="4">
         <v-text-field outlined ref="zoom" v-model.number="modified.zoom" :rules="[zoom => zoom >= 0.5 && zoom <= 1.5]" />
@@ -27,6 +27,8 @@
       </v-col>
     </v-row>
 
+    <br>
+    <br>
     <v-row class="settings-row">
       <v-col>
         <v-btn @click="clearCache" :disabled="cacheEntries < 1">Clear Cache</v-btn>
