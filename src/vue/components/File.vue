@@ -41,6 +41,12 @@ const File = Vue.extend({
   },
   methods: {
     ...mapActions(["selectFile"]),
+    refresh(): void {  // Called by root component
+      this.refreshParent();
+    },
+    refreshParent(): void {
+      this.$emit("parent", "refresh");
+    },
     select(isKeyEvent: boolean): void {
       if (this.isSelected) {
         this.deselect();
@@ -83,9 +89,6 @@ const File = Vue.extend({
     openMenu(event, menuActivator) {
       this.$refs.container.click(event);  // Click somewhere else first to close existing menus
       menuActivator.click(event);
-    },
-    refreshParent(): void {
-      this.$emit("parent", "refresh");
     }
   },
   mounted(): void {

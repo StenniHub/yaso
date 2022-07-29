@@ -128,6 +128,17 @@ export default {
   },
   methods: {
     ...mapActions(["selectGame", "saveGames"]),
+    refreshRoot(): void {
+      const selectedProfile = this.profile;
+      this.profile = null;  // Make sure we refresh as if we are on the root folder
+
+      this.refresh().then(() => {
+        if (!this.useProfiles) return;
+
+        this.profiles = this.files.filter(file => file.isFolder).map(folder => folder.name);
+        this.selectProfile(selectedProfile);  // Re-select profile after refresh
+      });
+    },
     getFileComponents() {  // Can we declare File/Folder component as a type?
       const fileElements = Array.from(document.getElementsByClassName("file-container"));
       return fileElements.map(el => el["__vue__"]);
@@ -166,7 +177,7 @@ export default {
         this.game.savefile = output.savefile;
         this.game.backups = output.backups;
         this.saveGames();
-        this.refreshAll();
+        this.refreshRoot();
       });
     },
     addProfile(): void {
@@ -184,6 +195,15 @@ export default {
     },
     getProfile(): string {  // Only return selected profile if it matches one of the root folders
       return this.profiles.includes(this.profile) ? this.profile : null;
+    },
+    selectProfile(profile: string): void {
+      if (this.profile == profile) return;
+      if (!this.profiles.includes(profile)) profile = null;
+
+      this.profile = profile;
+      if (!this.isOnSelectionPath) this.selectFile({ folder: null, file: null });
+      this.saveConfig();
+      this.refresh();
     },
     newFolder(): void {  // TODO: If no folder is selected should add to profiles too
       this.$refs.folderDialog[0].open().then(output => {
@@ -243,26 +263,6 @@ export default {
       }
 
       localStorage[this.gameId] = JSON.stringify(config);
-    },
-    selectProfile(profile: string): void {
-      if (this.profile == profile) return;
-      if (!this.profiles.includes(profile)) profile = null;
-
-      this.profile = profile;
-      if (!this.isOnSelectionPath) this.selectFile({ folder: null, file: null });
-      this.saveConfig();
-      this.refresh();
-    },
-    refreshAll(): void {
-      const selectedProfile = this.profile;
-      this.profile = null;  // Make sure we are at the root folder for loading profiles
-
-      this.refresh().then(() => {
-        if (!this.useProfiles) return;
-
-        this.profiles = this.files.filter(file => file.isFolder).map(folder => folder.name);
-        this.selectProfile(selectedProfile);  // Re-select profile after refresh
-      });
     }
   },
   created(): void {
@@ -277,7 +277,7 @@ export default {
     if (!this.validSettings) {
       this.editSettings();
     } else {
-      this.refreshAll();
+      this.refreshRoot();
     }
 
     this.refreshListeners();

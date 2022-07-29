@@ -64,39 +64,11 @@ const Folder = Vue.extend({
   },
   methods: {
     ...mapMutations(["setDragging"]),
-    startDrag(): void {
-      this.setDragging(true);
-    },
-    endDrag(): void {
-      this.setDragging(false);
-    },
-    async onFileMove(event): Promise<void> {
-      // TODO: Can we just revert move events instead of refreshing, and only update on added/removed?
-      if (event.added) {
-        const file: FileObject = event.added.element;
-        const toPath = this.path + "\\" + file.name;
-        
-        // Have to exclude file with original path, since VueDraggable has already moved it to the new list
-        if (this.files.some(otherFile => otherFile.name === file.name && otherFile.path !== file.path)) {
-          invoke("errorMsg", "A file with the same name already exists");
-        } else {
-          await invoke("move", file.path, toPath);
-        }
-      }
-
-      this.refresh();
-    },
-    onEvent(action: string) {
-      if (action === "refresh") this.refresh();
-    },
-    getFileComponent(file: FileObject) {
-      return file.isFolder ? Folder : File;
-    },
-    isFileSelected(file: FileObject): boolean {
-      return file.path == (this.game.selected.folder + "\\" + this.game.selected.file);
-    },
-    isFileOnSelectionPath(file: FileObject): boolean {
-      return (this.game.selected.folder + "\\").startsWith(file.path + "\\");
+    async refresh(): Promise<unknown> {
+      this.isOpen = true;
+      return invoke("readDir", this.path).then((files: FileObject[]) => {
+        this.files = files;
+      });
     },
     select(keyEvent: boolean): void {
       if (this.isSelected && this.isOpen) {
@@ -124,11 +96,33 @@ const Folder = Vue.extend({
       if (this.isOpen) this.close();
       else this.open();
     },
-    async refresh(): Promise<unknown> {
-      this.isOpen = true;
-      return invoke("readDir", this.path).then((files: FileObject[]) => {
-        this.files = files;
-      });
+    startDrag(): void {
+      this.setDragging(true);
+    },
+    endDrag(): void {
+      this.setDragging(false);
+    },
+    async onFileMove(event): Promise<void> {
+      // TODO: Can we just revert move events instead of refreshing, and only update on added/removed?
+      if (event.added) {
+        const file: FileObject = event.added.element;
+        const toPath = this.path + "\\" + file.name;
+        
+        // Have to exclude file with original path, since VueDraggable has already moved it to the new list
+        if (this.files.some(otherFile => otherFile.name === file.name && otherFile.path !== file.path)) {
+          invoke("errorMsg", "A file with the same name already exists");
+        } else {
+          await invoke("move", file.path, toPath);
+        }
+      }
+
+      this.refresh();
+    },
+    onEvent(action: string) {
+      if (action === "refresh") this.refresh();
+    },
+    getFileComponent(file: FileObject) {
+      return file.isFolder ? Folder : File;
     }
   },
   mounted(): void {
