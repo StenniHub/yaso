@@ -11,7 +11,6 @@ module.exports = {
       builderOptions: {
         extraResources: [],
         win: {
-          'signAndEditExecutable': false,
           target: ['nsis', 'portable']
         },
         nsis: {
