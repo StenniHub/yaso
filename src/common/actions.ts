@@ -35,6 +35,13 @@ export const actions = [
     config: {
       filePath: null
     }
+  },
+  {
+    id: "playSound",
+    description: "Play a sound file",
+    config: {
+      filePath: null
+    }
   }
 ]
 

@@ -4,7 +4,6 @@ import * as fileUtils from "./fileutils";
 import { window } from "../window";
 import { GlobalKeyboardListener } from 'node-global-key-listener';
 import Path from "path";
-
 // Electron globalShortcut does not work during exclusive fullscreen, using node-global-key-listener instead
 const isProduction = process.env.NODE_ENV === "production";
 const windowsOptions = isProduction ? { serverPath: Path.join(__dirname, "node_modules/node-global-key-listener/bin/WinKeyServer.exe") } : {};
@@ -14,12 +13,14 @@ const separator = " + ";
 const boundKeys = {};
 
 const actions = {
-  loadSavefile: fileUtils.loadSavefile,
-  selectNext: () => window.webContents.send("selectNext"),
-  selectPrevious: () => window.webContents.send("selectPrevious"),
-  toggleFolder: () => window.webContents.send("toggleFolder"),
-  toggleAlwaysOnTop: () => window.webContents.send("toggleAlwaysOnTop"),
-  toggleReadOnly: fileUtils.toggleReadOnly
+  loadSavefile: (config) => fileUtils.loadSavefile(),
+  selectNext: (config) => window.webContents.send("selectNext"),
+  selectPrevious: (config) => window.webContents.send("selectPrevious"),
+  toggleFolder: (config) => window.webContents.send("toggleFolder"),
+  toggleAlwaysOnTop: (config) => window.webContents.send("toggleAlwaysOnTop"),
+  toggleReadOnly: (config) => fileUtils.toggleReadOnly(),
+  openFile: (config) => fileUtils.openFile(config.filePath),
+  playSound: (config) => fileUtils.playSound(config.filePath)
 };
 
 function getKeys(event, down): string {
@@ -84,9 +85,7 @@ export function unbind(keys: string): void {
 }
 
 export function bind(keybind: Record<string, any>): boolean {
-  let keys = keybind["keys"];
-  const action = keybind["action"];
-
+  let keys = keybind.keys;
   // TODO: Convert to globalShortcut format and check if keys are already registered first
   // window.webContents.send("message", { message: "Could not register keybind: " + keys, success: false });
   // return false;
@@ -102,11 +101,8 @@ export function bind(keybind: Record<string, any>): boolean {
     unbind(keys);  // Collision detection is handled by renderer
   }
 
-  let actionFunc
-  if (action.includes("openFile")) actionFunc = () => fileUtils.openFile(keybind.config.filePath);
-  else actionFunc = actions[action];
-
-  boundKeys[keys] = actionFunc;
+  const actionFunc = actions[keybind.action];
+  boundKeys[keys] = () => actionFunc(keybind.config);
   console.log("Registered: ", keys);
   return true;
 }

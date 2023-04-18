@@ -4,7 +4,7 @@ import { dialog, shell } from "electron";
 import { homedir } from "os";
 import { FileObject } from "@/common/files";
 import trash from "trash";
-import { exec } from "child_process";
+import { exec, spawn } from "child_process";
 import { sendSuccessMessage, sendErrorMessage } from "./messageUtils";
 
 declare const __static: string;
@@ -16,6 +16,10 @@ const isPortable = portablePath != null;
 const basePath = isPortable ? path.join(portablePath, "YASO") : path.join(homeDir, "Documents", "YASO");
 const configPath = path.join(basePath, "config");
 const imagesPath = path.join(basePath, "images");
+
+const useSeparateWavPlayer = false;
+const soundProcess = initSoundProcess();
+let activeSoundFile = null;
 
 export function initFolders(): void {
   const folders = [basePath, configPath, imagesPath];
@@ -63,6 +67,11 @@ export function readImage(file: string): string {
     fs.copyFileSync(path.join(__static, "images", file), filePath);
   }
 
+  return readFileBase64(filePath);
+}
+
+function readFileBase64(path: string) {
+  const filePath = toAbsolutePath(path);
   return fs.readFileSync(filePath, {encoding: 'base64'});
 }
 
@@ -204,4 +213,37 @@ function getSelectedGame() {
   const games = readConfig("games");
   const session = readConfig("session");
   return games[session.game];
+}
+
+function initSoundProcess() {
+  const soundProcess = spawn("powershell.exe");
+
+  soundProcess.stderr.on("data", function(data) {
+    console.log("Sound Process: " + data);
+  });
+  
+  soundProcess.stdin.write('Add-Type -AssemblyName presentationCore\n');
+  soundProcess.stdin.write('$PLAYER = New-Object system.windows.media.mediaplayer\n');
+  if (useSeparateWavPlayer) {
+    soundProcess.stdin.write('$WAV_PLAYER = New-Object Media.SoundPlayer\n');  // Might be slightly faster for WAV files, but increases memory consumption
+  }
+
+  return soundProcess;
+}
+
+function callSoundProcess(filePath: string) {
+  if (useSeparateWavPlayer && filePath.toLowerCase().includes('.wav')) {
+    if (activeSoundFile != filePath) soundProcess.stdin.write('$WAV_PLAYER.soundlocation="' + filePath + '"\n');  // Not sure if this causes a delay
+    soundProcess.stdin.write('$WAV_PLAYER.Play()\n');
+    return;
+  }
+
+  soundProcess.stdin.write('$PLAYER.open("' + filePath + '")\n');  // Has to be called every time
+  soundProcess.stdin.write('$PLAYER.Play()\n');
+}
+
+export function playSound(path: string) {
+  const filePath = toAbsolutePath(path);
+  callSoundProcess(filePath);
+  activeSoundFile = filePath;
 }
