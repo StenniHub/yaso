@@ -245,6 +245,7 @@ function playSoundProcess(filePath: string) {
 function stopSoundProcess() {
   if (useSeparateWavPlayer && activeSoundFile.toLowerCase().includes('.wav')) {
     soundProcess.stdin.write('$WAV_PLAYER.Stop()\n');
+    return;
   }
 
   soundProcess.stdin.write('$PLAYER.Stop()\n');
