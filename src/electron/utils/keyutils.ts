@@ -20,8 +20,21 @@ const actions = {
   toggleAlwaysOnTop: (config) => window.webContents.send("toggleAlwaysOnTop"),
   toggleReadOnly: (config) => fileUtils.toggleReadOnly(),
   openFile: (config) => fileUtils.openFile(config.filePath),
-  playSound: (config) => fileUtils.playSound(config.filePath)
+  playSound: (config) => fileUtils.playSound(config.filePath),
+  startTimer: (config) => startTimer(config.filePath),
+  pauseTimer: (config) => window.webContents.send("pauseTimer"),
+  stopTimer: (config) => stopTimer()
 };
+
+function startTimer(soundFilePath: string): void {
+  window.webContents.send("startTimer");
+  if (soundFilePath != null) fileUtils.playSound(soundFilePath);
+}
+
+function stopTimer() {
+  window.webContents.send("stopTimer");
+  fileUtils.stopSound();
+}
 
 function getKeys(event, down): string {
   let keys = "";

@@ -231,7 +231,7 @@ function initSoundProcess() {
   return soundProcess;
 }
 
-function callSoundProcess(filePath: string) {
+function playSoundProcess(filePath: string) {
   if (useSeparateWavPlayer && filePath.toLowerCase().includes('.wav')) {
     if (activeSoundFile != filePath) soundProcess.stdin.write('$WAV_PLAYER.soundlocation="' + filePath + '"\n');  // Not sure if this causes a delay
     soundProcess.stdin.write('$WAV_PLAYER.Play()\n');
@@ -242,8 +242,20 @@ function callSoundProcess(filePath: string) {
   soundProcess.stdin.write('$PLAYER.Play()\n');
 }
 
+function stopSoundProcess() {
+  if (useSeparateWavPlayer && activeSoundFile.toLowerCase().includes('.wav')) {
+    soundProcess.stdin.write('$WAV_PLAYER.Stop()\n');
+  }
+
+  soundProcess.stdin.write('$PLAYER.Stop()\n');
+}
+
 export function playSound(path: string) {
   const filePath = toAbsolutePath(path);
-  callSoundProcess(filePath);
+  playSoundProcess(filePath);
   activeSoundFile = filePath;
+}
+
+export function stopSound() {
+  stopSoundProcess();
 }

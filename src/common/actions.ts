@@ -42,6 +42,23 @@ export const actions = [
     config: {
       filePath: null
     }
+  },
+  {
+    id: "startTimer",
+    description: "Start timer",
+    config: {
+      filePath: null
+    }
+  },
+  {
+    id: "pauseTimer",
+    description: "Pause timer",
+    config: null
+  },
+  {
+    id: "stopTimer",
+    description: "Stop timer",
+    config: null
   }
 ]
 

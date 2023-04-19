@@ -9,6 +9,7 @@
             <icon-button v-if="showBackButton" icon="mdi-arrow-left" :onClick="() => $router.push({ name: 'Game', params: { id: session.game } })" :tooltip="'Back to ' + game.title" v-bind="commonProps" />
             <icon-button icon="mdi-controller-classic" :onClick="() => $router.push({ name: 'Games' })" tooltip="Games" v-bind="commonProps" />
             <icon-button icon="mdi-keyboard" :onClick="() => $router.push({ name: 'Keybinds' })" tooltip="Keybinds" v-bind="commonProps" />
+            <icon-button icon="mdi-timer" :onClick="() => $router.push({ name: 'Timer' })" tooltip="Timer" v-bind="commonProps" />
             <icon-button icon="mdi-cog" :onClick="() => $router.push({ name: 'Settings' })" tooltip="Settings" v-bind="commonProps" />
             <icon-button icon="mdi-information" :onClick="() => $router.push({ name: 'About' })" tooltip="About" v-bind="commonProps" />
           </v-list>
