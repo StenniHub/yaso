@@ -251,12 +251,12 @@ function stopSoundProcess() {
   soundProcess.stdin.write('$PLAYER.Stop()\n');
 }
 
-export function playSound(path: string) {
+export async function playSound(path: string) {
   const filePath = toAbsolutePath(path);
   playSoundProcess(filePath);
   activeSoundFile = filePath;
 }
 
-export function stopSound() {
+export async function stopSound() {
   stopSoundProcess();
 }

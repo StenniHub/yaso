@@ -135,6 +135,9 @@ function initApp(): void {
   ipcMain.handle("toggleReadOnly", () => fileUtils.toggleReadOnly());
   ipcMain.handle("revealInExplorer", (event: Event, path: string) => fileUtils.revealInExplorer(path));
 
+  ipcMain.handle("playSound", (event: Event, filePath: string) => fileUtils.playSound(filePath));
+  ipcMain.handle("stopSound", () => fileUtils.stopSound());
+
   ipcMain.handle("move", (event: Event, fromPath: string, toPath: string) => fileUtils.rename(fromPath, toPath));
   ipcMain.handle("remove", (event: Event, path: string) => fileUtils.remove(path));
 

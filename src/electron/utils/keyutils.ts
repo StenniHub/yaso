@@ -21,32 +21,11 @@ const actions = {
   toggleReadOnly: (config) => fileUtils.toggleReadOnly(),
   openFile: (config) => fileUtils.openFile(config.filePath),
   playSound: (config) => fileUtils.playSound(config.filePath),
-  startTimer: (config) => startTimer(config.filePath),
+  startTimer: (config) => window.webContents.send("startTimer"),
   pauseTimer: (config) => window.webContents.send("pauseTimer"),
-  stopTimer: (config) => stopTimer(),
-  toggleTimer: (config) => toggleTimer()
+  stopTimer: (config) => window.webContents.send("stopTimer"),
+  toggleTimer: (config) => window.webContents.send("toggleTimer")
 };
-
-function startTimer(soundFilePath: string): void {
-  const config = fileUtils.readConfig("session");
-  if (config.timerEnabled) {
-    window.webContents.send("startTimer");
-    if (soundFilePath != null) fileUtils.playSound(soundFilePath);
-  }
-}
-
-function stopTimer() {
-  window.webContents.send("stopTimer");
-  fileUtils.stopSound();
-}
-
-// Hacky workaround for now, should improve later
-function toggleTimer() {
-  const config = fileUtils.readConfig("session");
-  config.timerEnabled = !config.timerEnabled;
-  fileUtils.saveConfig("session", config);
-  window.webContents.send("timerEnabled", { timerEnabled: config.timerEnabled });
-}
 
 function getKeys(event, down): string {
   let keys = "";
