@@ -59,6 +59,11 @@ export const actions = [
     id: "stopTimer",
     description: "Stop timer",
     config: null
+  },
+  {
+    id: "toggleTimer",
+    description: "Enable/disable timer hotkeys",
+    config: null
   }
 ]
 

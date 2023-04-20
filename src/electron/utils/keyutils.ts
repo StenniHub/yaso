@@ -23,17 +23,29 @@ const actions = {
   playSound: (config) => fileUtils.playSound(config.filePath),
   startTimer: (config) => startTimer(config.filePath),
   pauseTimer: (config) => window.webContents.send("pauseTimer"),
-  stopTimer: (config) => stopTimer()
+  stopTimer: (config) => stopTimer(),
+  toggleTimer: (config) => toggleTimer()
 };
 
 function startTimer(soundFilePath: string): void {
-  window.webContents.send("startTimer");
-  if (soundFilePath != null) fileUtils.playSound(soundFilePath);
+  const config = fileUtils.readConfig("session");
+  if (config.timerEnabled) {
+    window.webContents.send("startTimer");
+    if (soundFilePath != null) fileUtils.playSound(soundFilePath);
+  }
 }
 
 function stopTimer() {
   window.webContents.send("stopTimer");
   fileUtils.stopSound();
+}
+
+// Hacky workaround for now, should improve later
+function toggleTimer() {
+  const config = fileUtils.readConfig("session");
+  config.timerEnabled = !config.timerEnabled;
+  fileUtils.saveConfig("session", config);
+  window.webContents.send("timerEnabled", { timerEnabled: config.timerEnabled });
 }
 
 function getKeys(event, down): string {
