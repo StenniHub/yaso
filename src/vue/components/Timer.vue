@@ -77,7 +77,10 @@ export default {
     },
   },
   mounted(): void {
-    this.muted = JSON.parse(localStorage["muteTimer"]);
+    if (localStorage["muteTimer"] != null) {
+      this.muted = JSON.parse(localStorage["muteTimer"]);
+    }
+    
     ipcRenderer.on("startTimer", this.startTimer);
     ipcRenderer.on("pauseTimer", this.pauseTimer);
     ipcRenderer.on("stopTimer", this.stopTimer);
