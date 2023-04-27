@@ -276,3 +276,12 @@ a {
         border: solid 1px #555;
     }
 }
+
+.timer-btn-container {
+    display: flex;
+    flex-flow: row;
+    justify-content: center;
+    > * {
+        margin: 0 2rem;
+    }
+}

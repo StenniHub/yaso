@@ -1,21 +1,26 @@
 <template>
   <v-container fluid class="main-container">
-    <div style="position: absolute; display: flex; flex-flow: row; justify-content: center; width: 100%; z-index: 10; padding-right: 1.5rem; margin-top: -1rem; opacity: 50%;">
-      <v-icon v-if="this.disabled" size="200">mdi-close-octagon-outline</v-icon>
+    <StopWatch ref="stopWatch" />
+    <div class="timer-btn-container">
+      <icon-button :icon="this.muted ? 'mdi-volume-mute' : 'mdi-volume-high'" :onClick="toggleMute" tooltip="Mute timer" :disabled="noSoundFile" />
+      <icon-button icon="mdi-cog" :onClick="editSettings" tooltip="Settings" />
     </div>
-    <StopWatch ref="stopWatch"/>
+
+    <confirm-dialog ref="settingsDialog" header="Timer Settings" :inputs="settingsDialog.inputs" />
   </v-container>
 </template>
 
 <script lang="ts">
 import StopWatch from "./StopWatch.vue";
+import IconButton from "./IconButton.vue";
+import ConfirmDialog from "./ConfirmDialog.vue";
 import { invoke, ipcRenderer } from "@/vue/utils/ipcUtils";
-import { mapState } from "vuex";
+import { mapState, mapActions } from "vuex";
 
 export default {
-  components: { StopWatch },
+  components: { StopWatch, IconButton, ConfirmDialog },
   data: (): Record<string, unknown> => ({
-    disabled: false
+    muted: false
   }),
   computed: {
     ...mapState({
@@ -23,45 +28,66 @@ export default {
     }),
     stopWatch() {
       return this.$refs.stopWatch;
+    },
+    noSoundFile() {
+      return this.config.soundFile == null || this.config.soundFile == "";
+    },
+    settingsDialog() {
+      return {
+        inputs: {
+          soundFile: { type: 'file', label: 'Path to sound file', default: this.config.soundFile }
+        }
+      }
     }
   },
   methods: {
-    toggleTimer(): void {
-      this.disabled = !this.disabled;
+    ...mapActions(["saveSession"]),
+    toggleMute(): void {
+      if (this.noSoundFile) return;
+      this.muted = !this.muted;
+      localStorage["muteTimer"] = this.muted;
+      this.stopSound();
     },
     startTimer(): void {
-      if (this.disabled || this.stopWatch.running) return;
+      if (this.stopWatch.running) return;
       this.stopWatch.start();
       this.playSound();
     },
     pauseTimer(): void {
-      if (this.disabled) return;
       this.stopWatch.pause();
       this.stopSound();
     },
     stopTimer(): void {
-      if (this.disabled) return;
       this.stopWatch.stop();
       this.stopSound();
     },
     playSound(): void {
-      if (this.config.soundFile) invoke("playSound", this.config.soundFile);
+      if (this.muted || this.noSoundFile) return;
+      invoke("playSound", this.config.soundFile);
     },
     stopSound(): void {
-      invoke("stopSound", this.config.soundFile);
-    }
+      invoke("stopSound");
+    },
+    editSettings(): void {
+      this.$refs.settingsDialog.open().then(output => {
+        if (output == null) return;
+        this.config.soundFile = output.soundFile;
+        this.saveSession();
+      });
+    },
   },
   mounted(): void {
+    this.muted = JSON.parse(localStorage["muteTimer"]);
     ipcRenderer.on("startTimer", this.startTimer);
     ipcRenderer.on("pauseTimer", this.pauseTimer);
     ipcRenderer.on("stopTimer", this.stopTimer);
-    ipcRenderer.on("toggleTimer", this.toggleTimer);
+    ipcRenderer.on("muteTimer", this.toggleMute);
   },
   destroyed(): void {
     ipcRenderer.removeAllListeners("startTimer");
     ipcRenderer.removeAllListeners("pauseTimer");
     ipcRenderer.removeAllListeners("stopTimer");
-    ipcRenderer.removeAllListeners("toggleTimer");
+    ipcRenderer.removeAllListeners("muteTimer");
   }
 }
 </script>

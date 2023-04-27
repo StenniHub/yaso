@@ -24,7 +24,7 @@ const actions = {
   startTimer: (config) => window.webContents.send("startTimer"),
   pauseTimer: (config) => window.webContents.send("pauseTimer"),
   stopTimer: (config) => window.webContents.send("stopTimer"),
-  toggleTimer: (config) => window.webContents.send("toggleTimer")
+  muteTimer: (config) => window.webContents.send("muteTimer")
 };
 
 function getKeys(event, down): string {

@@ -18,6 +18,12 @@ export function applyMigrations(): void {
     session.useProfiles = true;
   }
 
+  if (parsedVersion < 146) {
+    session.timer = {
+      soundFile: null
+    }
+  }
+
   session.version = version;
   fileUtils.saveConfig("session", session);
 }

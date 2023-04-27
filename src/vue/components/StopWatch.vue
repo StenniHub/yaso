@@ -4,9 +4,9 @@
     <span class="time" :class="{ running: this.running, stopped: this.stopped}">{{ this.time }}</span>       
 
     <div class="btn-container">
-      <icon-button icon="mdi-play" size="x-large" :onClick="start" tooltip="Start timer" :disabled="running" />
-      <icon-button icon="mdi-pause" size="x-large" :onClick="pause" tooltip="Pause timer" :disabled="!running" />
-      <icon-button icon="mdi-stop" size="x-large" :onClick="stop" tooltip="Stop timer" :disabled="stopped || startedAt == null" />
+      <icon-button icon="mdi-play" :onClick="start" tooltip="Start timer" :disabled="running" />
+      <icon-button icon="mdi-pause" :onClick="pause" tooltip="Pause timer" :disabled="!running" />
+      <icon-button icon="mdi-stop" :onClick="stop" tooltip="Stop timer" :disabled="stopped || startedAt == null" />
     </div>
   
   </div>
