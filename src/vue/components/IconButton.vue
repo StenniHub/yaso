@@ -3,7 +3,7 @@
     <v-tooltip v-bind="{ [tipPos]: true }" :disabled="hideTooltip">
       <template v-slot:activator="{ on: tipOn }">
         <v-btn v-bind="{ [size]: true }" icon @click="click" :disabled="disabled" v-on="{ ...tipOn, ...on }">
-          <v-icon>{{ icon }}</v-icon>
+          <v-icon v-bind="{ [size]: true }">{{ icon }}</v-icon>
         </v-btn>
       </template>
       <span>{{ tooltip }}</span>
@@ -23,7 +23,7 @@ export default {
     on: Object,
     size: {
       type: String,
-      default: 'x-large'
+      default: 'large'
     },
     tooltip: String,
     tipPos: {

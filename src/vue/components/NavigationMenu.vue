@@ -1,11 +1,11 @@
 <template>
   <v-hover v-slot="{ hover }" close-delay="100">
     <div>
-      <v-app-bar-nav-icon/>
+      <v-app-bar-nav-icon style="pointer-events: none"/>
 
       <v-expand-x-transition appear>
-        <v-navigation-drawer class="app-drawer" v-if="hover" app permanent clipped mini-variant>
-          <v-list dense>
+        <v-navigation-drawer class="app-drawer" v-if="hover" app permanent clipped mini-variant color="#262626">
+          <v-list dense class="nav-menu-list">
             <icon-button v-if="showBackButton" icon="mdi-arrow-left" :onClick="() => $router.push({ name: 'Game', params: { id: session.game } })" :tooltip="'Back to ' + game.title" v-bind="commonProps" />
             <icon-button icon="mdi-controller-classic" :onClick="() => $router.push({ name: 'Games' })" tooltip="Games" v-bind="commonProps" />
             <icon-button icon="mdi-keyboard" :onClick="() => $router.push({ name: 'Keybinds' })" tooltip="Keybinds" v-bind="commonProps" />
