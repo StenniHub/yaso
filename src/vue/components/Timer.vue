@@ -1,6 +1,6 @@
 <template>
   <v-container fluid class="main-container">
-    <StopWatch ref="stopWatch" />
+    <StopWatch ref="stopWatch" :onStart="playSound" :onPause="stopSound" :onStop="stopSound" />
     <div class="timer-btn-container">
       <icon-button :icon="this.muted ? 'mdi-volume-mute' : 'mdi-volume-high'" :onClick="toggleMute" tooltip="Mute timer" :disabled="noSoundFile" />
       <icon-button icon="mdi-cog" :onClick="editSettings" tooltip="Settings" />
@@ -48,19 +48,6 @@ export default {
       localStorage["muteTimer"] = this.muted;
       this.stopSound();
     },
-    startTimer(): void {
-      if (this.stopWatch.running) return;
-      this.stopWatch.start();
-      this.playSound();
-    },
-    pauseTimer(): void {
-      this.stopWatch.pause();
-      this.stopSound();
-    },
-    stopTimer(): void {
-      this.stopWatch.stop();
-      this.stopSound();
-    },
     playSound(): void {
       if (this.muted || this.noSoundFile) return;
       invoke("playSound", this.config.soundFile);
@@ -81,9 +68,9 @@ export default {
       this.muted = JSON.parse(localStorage["muteTimer"]);
     }
     
-    ipcRenderer.on("startTimer", this.startTimer);
-    ipcRenderer.on("pauseTimer", this.pauseTimer);
-    ipcRenderer.on("stopTimer", this.stopTimer);
+    ipcRenderer.on("startTimer", this.stopWatch.start);
+    ipcRenderer.on("pauseTimer", this.stopWatch.pause);
+    ipcRenderer.on("stopTimer", this.stopWatch.stop);
     ipcRenderer.on("muteTimer", this.toggleMute);
   },
   destroyed(): void {

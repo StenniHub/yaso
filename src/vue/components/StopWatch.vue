@@ -27,6 +27,17 @@ const StopWatch = Vue.extend({
     running: false,
     stopped: false
   }),
+  props: {
+    onStart: {  // Only triggered again a full stop
+      type: Function
+    },
+    onPause: {
+      type: Function
+    },
+    onStop: {
+      type: Function
+    }
+  },
   methods: {
     start(): void {
       if (this.running) return;
@@ -34,6 +45,7 @@ const StopWatch = Vue.extend({
       if (this.startedAt === null) {
         this.reset();
         this.startedAt = new Date();
+        if (this.onStart) this.onStart();
       }
 
       if (this.pausedAt !== null) {
@@ -47,6 +59,7 @@ const StopWatch = Vue.extend({
       this.running = false;
       this.pausedAt = new Date();
       clearInterval(this.interval);
+      if (this.onPause) this.onPause();
     },
     stop(): void {
       this.stopped = true;
@@ -59,8 +72,9 @@ const StopWatch = Vue.extend({
         this.running = false;
       } else {
         this.reset();
-        return;
       }
+
+      if (this.onStop) this.onStop();
     },
     reset(): void {
       if (!this.stopped) this.stop();
@@ -74,10 +88,7 @@ const StopWatch = Vue.extend({
       var sec = timeElapsed.getUTCSeconds();
       var ms = timeElapsed.getUTCMilliseconds();
 
-      this.time = 
-                this.zeroPrefix(min, 2) + ":" + 
-                this.zeroPrefix(sec, 2) + "." + 
-                this.zeroPrefix(ms, 3);
+      this.time = this.zeroPrefix(min, 2) + ":" + this.zeroPrefix(sec, 2) + "." + this.zeroPrefix(ms, 3);
     },
     zeroPrefix(num, digit): string {
       var zero = '';
