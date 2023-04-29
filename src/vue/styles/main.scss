@@ -126,6 +126,12 @@ a {
     display: none !important;
 }
 
+.settings-container {
+    max-height: calc(100vh - 7.5rem);
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
 .settings-row {
     padding-left: 1rem;
     padding-right: 1rem;

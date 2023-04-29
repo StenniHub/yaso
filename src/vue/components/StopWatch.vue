@@ -4,9 +4,9 @@
     <span class="time" :class="{ running: this.running, stopped: this.stopped}">{{ this.time }}</span>       
 
     <div class="btn-container">
-      <icon-button icon="mdi-play" :onClick="start" tooltip="Start timer" :disabled="running" />
-      <icon-button icon="mdi-pause" :onClick="pause" tooltip="Pause timer" :disabled="!running" />
-      <icon-button icon="mdi-stop" :onClick="stop" tooltip="Stop timer" :disabled="stopped || startedAt == null" />
+      <icon-button icon="mdi-play" :onClick="start" tooltip="Start timer" :disabled="disabled || running" />
+      <icon-button icon="mdi-pause" :onClick="pause" tooltip="Pause timer" :disabled="disabled || !running" />
+      <icon-button icon="mdi-stop" :onClick="stop" tooltip="Stop timer" :disabled="disabled || stopped || startedAt == null" />
     </div>
   
   </div>
@@ -19,7 +19,7 @@ import IconButton from "./IconButton.vue";
 const StopWatch = Vue.extend({
   components: { IconButton },
   data: (): Record<string, unknown> => ({
-    time: "00:00.000",
+    time: "00:00.00",
     startedAt: null,
     pausedAt: null,
     pausedDuration: 0,
@@ -36,6 +36,10 @@ const StopWatch = Vue.extend({
     },
     onStop: {
       type: Function
+    },
+    disabled: {
+      type: Boolean,
+      default: false
     }
   },
   methods: {
@@ -79,16 +83,19 @@ const StopWatch = Vue.extend({
     reset(): void {
       if (!this.stopped) this.stop();
       this.stopped = false;
-      this.time = "00:00.000";
+      this.time = "00:00.00";
     },
     clockRunning(): void {
       var currentTime = new Date().valueOf();
       var timeElapsed = new Date(currentTime - this.startedAt - this.pausedDuration);
+      var hour = timeElapsed.getUTCHours();
       var min = timeElapsed.getUTCMinutes();
       var sec = timeElapsed.getUTCSeconds();
       var ms = timeElapsed.getUTCMilliseconds();
 
-      this.time = this.zeroPrefix(min, 2) + ":" + this.zeroPrefix(sec, 2) + "." + this.zeroPrefix(ms, 3);
+      this.time = this.zeroPrefix(min, 2) + ":" + this.zeroPrefix(sec, 2);
+      this.time += "." + this.zeroPrefix(ms, 3).slice(0, 2);  // TODO: Add configurable precision
+      if (hour > 0) this.time = hour + ":" + this.time;
     },
     zeroPrefix(num, digit): string {
       var zero = '';

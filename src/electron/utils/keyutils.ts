@@ -13,18 +13,19 @@ const separator = " + ";
 const boundKeys = {};
 
 const actions = {
-  loadSavefile: (config) => fileUtils.loadSavefile(),
-  selectNext: (config) => window.webContents.send("selectNext"),
-  selectPrevious: (config) => window.webContents.send("selectPrevious"),
-  toggleFolder: (config) => window.webContents.send("toggleFolder"),
-  toggleAlwaysOnTop: (config) => window.webContents.send("toggleAlwaysOnTop"),
-  toggleReadOnly: (config) => fileUtils.toggleReadOnly(),
+  loadSavefile: () => fileUtils.loadSavefile(),
+  selectNext: () => window.webContents.send("selectNext"),
+  selectPrevious: () => window.webContents.send("selectPrevious"),
+  toggleFolder: () => window.webContents.send("toggleFolder"),
+  toggleAlwaysOnTop: () => window.webContents.send("toggleAlwaysOnTop"),
+  toggleReadOnly: () => fileUtils.toggleReadOnly(),
   openFile: (config) => fileUtils.openFile(config.filePath),
   playSound: (config) => fileUtils.playSound(config.filePath),
-  startTimer: (config) => window.webContents.send("startTimer"),
-  pauseTimer: (config) => window.webContents.send("pauseTimer"),
-  stopTimer: (config) => window.webContents.send("stopTimer"),
-  muteTimer: (config) => window.webContents.send("muteTimer")
+  startTimer: () => window.webContents.send("startTimer"),
+  pauseTimer: () => window.webContents.send("pauseTimer"),
+  stopTimer: () => window.webContents.send("stopTimer"),
+  muteTimer: () => window.webContents.send("muteTimer"),
+  disableTimer: () => window.webContents.send("disableTimer")
 };
 
 function getKeys(event, down): string {

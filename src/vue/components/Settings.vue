@@ -1,45 +1,48 @@
 <template>
-  <v-container fluid class="main-container small">
-    <v-row class="settings-row">
-      <v-col cols="4">
-        <v-text-field outlined ref="zoom" v-model.number="modified.zoom" :rules="[zoom => zoom >= 0.5 && zoom <= 1.5]" />
-      </v-col>
-      <v-col>
-        <p>Zoom level (0.5-1.5)</p>
-      </v-col>
-    </v-row>
+  <div class="settings-container">
+    <v-container fluid class="main-container small">
+      <v-row class="settings-row">
+        <v-col cols="4">
+          <v-text-field outlined ref="zoom" v-model.number="modified.zoom" :rules="[zoom => zoom >= 0.5 && zoom <= 1.5]" />
+        </v-col>
+        <v-col>
+          <p>Zoom level (0.5-1.5)</p>
+        </v-col>
+      </v-row>
 
-    <v-row class="settings-row">
-      <v-col cols="4">
-        <v-checkbox v-model.number="modified.useProfiles" />
-      </v-col>
-      <v-col>
-        <p>Enable game profiles</p>
-      </v-col>
-    </v-row>
+      <v-row class="settings-row">
+        <v-col cols="4">
+          <v-checkbox v-model.number="modified.useProfiles" />
+        </v-col>
+        <v-col>
+          <p>Enable game profiles</p>
+        </v-col>
+      </v-row>
 
-    <v-row class="settings-row">
-      <v-col cols="4">
-        <v-checkbox v-model.number="modified.disableDrag" />
-      </v-col>
-      <v-col>
-        <p>Disable dragging of files and folders</p>
-      </v-col>
-    </v-row>
+      <v-row class="settings-row">
+        <v-col cols="4">
+          <v-checkbox v-model.number="modified.disableDrag" />
+        </v-col>
+        <v-col>
+          <p>Disable dragging of files and folders</p>
+        </v-col>
+      </v-row>
 
-    <br>
-    <br>
-    <v-row class="settings-row">
-      <v-col>
-        <v-btn @click="clearCache" :disabled="cacheEntries < 1">Clear Cache</v-btn>
-      </v-col>
-    </v-row>
+      <br>
+      <br>
+      <v-row class="settings-row">
+        <v-col>
+          <v-btn @click="clearCache" :disabled="cacheEntries < 1">Clear Cache</v-btn>
+        </v-col>
+      </v-row>
+    </v-container>
 
     <div class="button-footer">
       <icon-button icon="mdi-close" :onClick="reset" tooltip="Discard changes" :disabled="!isModified" />
       <icon-button icon="mdi-check" :onClick="save" tooltip="Save changes" :disabled="!isModified" />
     </div>
-  </v-container>
+  </div>
+
 </template>
 
 <script lang="ts">

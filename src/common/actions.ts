@@ -64,6 +64,11 @@ export const actions = [
     id: "muteTimer",
     description: "Mute timer",
     config: null
+  },
+  {
+    id: "disableTimer",
+    description: "Disable timer",
+    config: null
   }
 ]
 

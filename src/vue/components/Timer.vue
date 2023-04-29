@@ -1,6 +1,6 @@
 <template>
   <v-container fluid class="main-container">
-    <StopWatch ref="stopWatch" :onStart="playSound" :onPause="stopSound" :onStop="stopSound" />
+    <StopWatch ref="stopWatch" :onStart="playSound" :onPause="stopSound" :onStop="stopSound" :disabled="disabled" />
     <div class="timer-btn-container">
       <icon-button :icon="this.muted ? 'mdi-volume-mute' : 'mdi-volume-high'" :onClick="toggleMute" tooltip="Mute timer" :disabled="noSoundFile" />
       <icon-button icon="mdi-cog" :onClick="editSettings" tooltip="Settings" />
@@ -15,12 +15,14 @@ import StopWatch from "./StopWatch.vue";
 import IconButton from "./IconButton.vue";
 import ConfirmDialog from "./ConfirmDialog.vue";
 import { invoke, ipcRenderer } from "@/vue/utils/ipcUtils";
+import { fromStorage, toStorage } from "@/vue/utils/storageUtils";
 import { mapState, mapActions } from "vuex";
 
 export default {
   components: { StopWatch, IconButton, ConfirmDialog },
   data: (): Record<string, unknown> => ({
-    muted: false
+    muted: fromStorage("timerMuted"),
+    disabled: fromStorage("timerDisabled")
   }),
   computed: {
     ...mapState({
@@ -43,10 +45,14 @@ export default {
   methods: {
     ...mapActions(["saveSession"]),
     toggleMute(): void {
-      if (this.noSoundFile) return;
       this.muted = !this.muted;
-      localStorage["muteTimer"] = this.muted;
+      toStorage("timerMuted", this.muted);
       this.stopSound();
+    },
+    toggleDisable(): void {
+      this.disabled = !this.disabled;
+      toStorage("timerDisabled", this.disabled);
+      if (this.stopWatch.running) this.stopWatch.stop();
     },
     playSound(): void {
       if (this.muted || this.noSoundFile) return;
@@ -64,20 +70,18 @@ export default {
     },
   },
   mounted(): void {
-    if (localStorage["muteTimer"] != null) {
-      this.muted = JSON.parse(localStorage["muteTimer"]);
-    }
-    
     ipcRenderer.on("startTimer", this.stopWatch.start);
     ipcRenderer.on("pauseTimer", this.stopWatch.pause);
     ipcRenderer.on("stopTimer", this.stopWatch.stop);
     ipcRenderer.on("muteTimer", this.toggleMute);
+    ipcRenderer.on("disableTimer", this.toggleDisable);
   },
   destroyed(): void {
     ipcRenderer.removeAllListeners("startTimer");
     ipcRenderer.removeAllListeners("pauseTimer");
     ipcRenderer.removeAllListeners("stopTimer");
     ipcRenderer.removeAllListeners("muteTimer");
+    ipcRenderer.removeAllListeners("disableTimer");
   }
 }
 </script>
