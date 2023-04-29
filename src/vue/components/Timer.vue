@@ -46,13 +46,13 @@ export default {
     ...mapActions(["saveSession"]),
     toggleMute(): void {
       this.muted = !this.muted;
-      toStorage("timerMuted", this.muted);
       this.stopSound();
+      toStorage("timerMuted", this.muted);
     },
     toggleDisable(): void {
       this.disabled = !this.disabled;
-      toStorage("timerDisabled", this.disabled);
       if (this.stopWatch.running) this.stopWatch.stop();
+      toStorage("timerDisabled", this.disabled);
     },
     playSound(): void {
       if (this.muted || this.noSoundFile) return;
