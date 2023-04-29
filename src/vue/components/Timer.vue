@@ -45,14 +45,26 @@ export default {
   methods: {
     ...mapActions(["saveSession"]),
     toggleMute(): void {
-      this.muted = !this.muted;
       this.stopSound();
+      this.muted = !this.muted;
       toStorage("timerMuted", this.muted);
     },
     toggleDisable(): void {
+      this.stopTimer();
       this.disabled = !this.disabled;
-      if (this.stopWatch.running) this.stopWatch.stop();
       toStorage("timerDisabled", this.disabled);
+    },
+    startTimer(): void {
+      if (this.disabled) return;
+      this.stopWatch.start();
+    },
+    pauseTimer(): void {
+      if (this.disabled) return;
+      this.stopWatch.pause();
+    },
+    stopTimer(): void {
+      if (this.disabled) return;
+      this.stopWatch.stop();
     },
     playSound(): void {
       if (this.muted || this.noSoundFile) return;
@@ -70,9 +82,9 @@ export default {
     },
   },
   mounted(): void {
-    ipcRenderer.on("startTimer", this.stopWatch.start);
-    ipcRenderer.on("pauseTimer", this.stopWatch.pause);
-    ipcRenderer.on("stopTimer", this.stopWatch.stop);
+    ipcRenderer.on("startTimer", this.startTimer);
+    ipcRenderer.on("pauseTimer", this.pauseTimer);
+    ipcRenderer.on("stopTimer", this.stopTimer);
     ipcRenderer.on("muteTimer", this.toggleMute);
     ipcRenderer.on("disableTimer", this.toggleDisable);
   },
