@@ -18,7 +18,7 @@ export function applyMigrations(): void {
     session.useProfiles = true;
   }
 
-  if (parsedVersion < 146) {
+  if (parsedVersion < 150) {
     session.timer = {
       soundFile: null
     }
