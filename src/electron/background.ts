@@ -1,6 +1,6 @@
 "use strict";
 
-import { app, protocol, Menu, MenuItem, ipcMain } from "electron";
+import { app, protocol, Menu, MenuItem, ipcMain, IpcMainInvokeEvent } from "electron";
 import installExtension, { VUEJS_DEVTOOLS } from "electron-devtools-installer";
 import { window, createWindow } from "./window";
 import * as keyUtils from "./utils/keyutils";
@@ -114,36 +114,36 @@ function initApp(): void {
 
 
   // Begin IPC handlers
-  ipcMain.handle("readDir", (event: Event, path: string) => fileUtils.readDir(path));
-  ipcMain.handle("readImage", (event: Event, file: string) => fileUtils.readImage(file));
-  ipcMain.handle("createFolder", (event: Event, path: string) => fileUtils.createFolder(path));
-  ipcMain.handle("copyFile", (event: Event, from: string, to:string) => fileUtils.copyFile(from, to));
+  ipcMain.handle("readDir", (event: IpcMainInvokeEvent, path: string) => fileUtils.readDir(path));
+  ipcMain.handle("readImage", (event: IpcMainInvokeEvent, file: string) => fileUtils.readImage(file));
+  ipcMain.handle("createFolder", (event: IpcMainInvokeEvent, path: string) => fileUtils.createFolder(path));
+  ipcMain.handle("copyFile", (event: IpcMainInvokeEvent, from: string, to:string) => fileUtils.copyFile(from, to));
 
-  ipcMain.handle("readConfig", (event: Event, filename: string) => fileUtils.readConfig(filename));
-  ipcMain.handle("saveConfig", (event: Event, filename: string, content: Record<string, unknown>) => fileUtils.saveConfig(filename, content));
+  ipcMain.handle("readConfig", (event: IpcMainInvokeEvent, filename: string) => fileUtils.readConfig(filename));
+  ipcMain.handle("saveConfig", (event: IpcMainInvokeEvent, filename: string, content: Record<string, unknown>) => fileUtils.saveConfig(filename, content));
 
   ipcMain.handle("awaitKeys", () => keyUtils.awaitKeys());
-  ipcMain.handle("unbindKeys", (event: Event, keys: string) => keyUtils.unbind(keys));
-  ipcMain.handle("bindKeys", (event: Event, keybind: Record<string, unknown>) => keyUtils.bind(keybind));
+  ipcMain.handle("unbindKeys", (event: IpcMainInvokeEvent, keys: string) => keyUtils.unbind(keys));
+  ipcMain.handle("bindKeys", (event: IpcMainInvokeEvent, keybind: Record<string, unknown>) => keyUtils.bind(keybind));
 
-  ipcMain.handle("successMsg", (event: Event, message: string) => messageUtils.sendSuccessMessage(message));
-  ipcMain.handle("errorMsg", (event: Event, message: string) => messageUtils.sendErrorMessage(message));
+  ipcMain.handle("successMsg", (event: IpcMainInvokeEvent, message: string) => messageUtils.sendSuccessMessage(message));
+  ipcMain.handle("errorMsg", (event: IpcMainInvokeEvent, message: string) => messageUtils.sendErrorMessage(message));
 
-  ipcMain.handle("selectFile", (event: Event, path: string) => fileUtils.selectFile(path));
-  ipcMain.handle("selectFolder", (event: Event, path: string) => fileUtils.selectFolder(path));
+  ipcMain.handle("selectFile", (event: IpcMainInvokeEvent, path: string) => fileUtils.selectFile(path));
+  ipcMain.handle("selectFolder", (event: IpcMainInvokeEvent, path: string) => fileUtils.selectFolder(path));
   ipcMain.handle("loadSavefile", () => fileUtils.loadSavefile());
   ipcMain.handle("toggleReadOnly", () => fileUtils.toggleReadOnly());
-  ipcMain.handle("revealInExplorer", (event: Event, path: string) => fileUtils.revealInExplorer(path));
+  ipcMain.handle("revealInExplorer", (event: IpcMainInvokeEvent, path: string) => fileUtils.revealInExplorer(path));
 
-  ipcMain.handle("playSound", (event: Event, filePath: string) => fileUtils.playSound(filePath));
+  ipcMain.handle("playSound", (event: IpcMainInvokeEvent, filePath: string) => fileUtils.playSound(filePath));
   ipcMain.handle("stopSound", () => fileUtils.stopSound());
 
-  ipcMain.handle("move", (event: Event, fromPath: string, toPath: string) => fileUtils.rename(fromPath, toPath));
-  ipcMain.handle("remove", (event: Event, path: string) => fileUtils.remove(path));
+  ipcMain.handle("move", (event: IpcMainInvokeEvent, fromPath: string, toPath: string) => fileUtils.rename(fromPath, toPath));
+  ipcMain.handle("remove", (event: IpcMainInvokeEvent, path: string) => fileUtils.remove(path));
 
   ipcMain.handle("minimizeWindow", () => window.minimize());
   ipcMain.handle("closeWindow", () => window.close());
-  ipcMain.handle("alwaysOnTop", (event: Event, enabled: boolean) => {
+  ipcMain.handle("alwaysOnTop", (event: IpcMainInvokeEvent, enabled: boolean) => {
     window.setAlwaysOnTop(enabled, "pop-up-menu");
     window.setOpacity(enabled ? 0.8 : 1.0);  // TODO: Make opacity user configurable
   });

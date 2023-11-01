@@ -1,6 +1,6 @@
 "use strict";
 
-import { BrowserWindow, shell } from "electron";
+import { BrowserWindow, shell, webContents } from "electron";
 import { createProtocol } from "vue-cli-plugin-electron-builder/lib";
 import path from "path";
 
@@ -27,10 +27,10 @@ export function createWindow(): BrowserWindow {
   
   window.menuBarVisible = false;
 
-  window.webContents.on('new-window', function(e, url) {
-    e.preventDefault();
+  window.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url);
-  });
+    return { action: 'deny' };
+  })
   
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     // Load the url of the dev server if in development mode

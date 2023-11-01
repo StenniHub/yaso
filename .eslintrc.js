@@ -23,7 +23,9 @@ module.exports = {
       "ignores": []
     }],
     "vue/max-attributes-per-line": "off",
-    "vue/multi-word-component-names": "off"
-    //"@typescript-eslint/no-var-requires": 0
+    "vue/multi-word-component-names": "off",
+    "no-var": 0,  // fix later
+    "@typescript-eslint/no-explicit-any": 0,
+    "vue/no-v-text-v-html-on-component": "off",
   }
 };
