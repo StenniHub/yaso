@@ -1,5 +1,6 @@
 import { ipcRenderer, webFrame } from "electron";
 
+window.isWindows = process.platform === "win32";
 window.ipcRenderer = ipcRenderer;
 window.webFrame = webFrame;
 

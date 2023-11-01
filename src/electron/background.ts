@@ -87,9 +87,13 @@ function initApp(): void {
 
     fileUtils.initFolders();
     applyMigrations();
-
+    
     createWindow();
     keyUtils.initKeyListener();
+    if (process.platform === "win32") {
+      // Not yet supported on linux
+      fileUtils.initSoundProcess();
+    }
 
     // Resize window
     const session = fileUtils.readConfig("session");

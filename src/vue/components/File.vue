@@ -10,7 +10,7 @@
 <script lang="ts">
 import Vue from "vue";
 import { mapState, mapActions } from "vuex";
-import { invoke } from "@/vue/utils/ipcUtils";
+import { sep, invoke } from "@/vue/utils/ipcUtils";
 import { scrollToElement } from "@/vue/utils/domUtils";
 import FileButton from "./FileButton.vue";
 import ConfirmDialog from "./ConfirmDialog.vue";
@@ -30,10 +30,10 @@ const File = Vue.extend({
       return this.$vnode.key;
     },
     path(): string {
-      return this.dir + "\\" + this.name;
+      return this.dir + sep + this.name;
     },
     isSelected(): boolean {
-      return (this.game.selected.folder + "\\" + this.game.selected.file) === this.path;
+      return (this.game.selected.folder + sep + this.game.selected.file) === this.path;
     },
     ...mapState({
       game: state => state["game"]
@@ -68,7 +68,7 @@ const File = Vue.extend({
       this.$refs.renameDialog.open().then(output => {
         if (output == null) return;
 
-        invoke("move", this.path, this.dir + "\\" + output.name).then(() => {
+        invoke("move", this.path, this.dir + sep + output.name).then(() => {
           this.deselect();  // Deselect to prevent attempt to load non-existing file
           this.refreshParent();
         });

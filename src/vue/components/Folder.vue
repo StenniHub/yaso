@@ -17,7 +17,7 @@
 import Vue from "vue";
 import File from "./File.vue";
 import { FileObject } from "@/common/files";
-import { invoke } from "@/vue/utils/ipcUtils";
+import { sep, invoke } from "@/vue/utils/ipcUtils";
 import ConfirmDialog from "./ConfirmDialog.vue";
 import Draggable from "vuedraggable";
 import { mapState, mapMutations } from "vuex";
@@ -36,7 +36,7 @@ const Folder = Vue.extend({
       return this.game.selected.folder == this.path && this.game.selected.file == null;
     },
     isOnSelectionPath(): boolean {
-      return (this.game.selected.folder + "\\").startsWith(this.path + "\\");
+      return (this.game.selected.folder + sep).startsWith(this.path + sep);
     },
     icon(): string {
       return this.isOpen ? "mdi-folder-open" : "mdi-folder";
@@ -65,6 +65,8 @@ const Folder = Vue.extend({
   methods: {
     ...mapMutations(["setDragging"]),
     async refresh(): Promise<unknown> {
+      if (this.path == null) return;
+
       this.isOpen = true;
       return invoke("readDir", this.path).then((files: FileObject[]) => {
         this.files = files;
@@ -106,7 +108,7 @@ const Folder = Vue.extend({
       // TODO: Can we just revert move events instead of refreshing, and only update on added/removed?
       if (event.added) {
         const file: FileObject = event.added.element;
-        const toPath = this.path + "\\" + file.name;
+        const toPath = this.path + sep + file.name;
         
         // Have to exclude file with original path, since VueDraggable has already moved it to the new list
         if (this.files.some(otherFile => otherFile.name === file.name && otherFile.path !== file.path)) {

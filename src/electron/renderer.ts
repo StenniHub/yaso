@@ -9,6 +9,7 @@ Vue.config.productionTip = false;
 
 declare global {
   interface Window {
+    isWindows: boolean;
     ipcRenderer: IpcRenderer;
     webContents: WebContents;
     webFrame: WebFrame;

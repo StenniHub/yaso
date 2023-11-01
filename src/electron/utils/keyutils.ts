@@ -2,15 +2,16 @@
 
 import * as fileUtils from "./fileutils";
 import { window } from "../window";
-import { GlobalKeyboardListener } from 'node-global-key-listener';
+import { GlobalKeyboardListener } from '@futpib/node-global-key-listener';
 import Path from "path";
 // Electron globalShortcut does not work during exclusive fullscreen, using node-global-key-listener instead
 const isProduction = process.env.NODE_ENV === "production";
-const windowsOptions = isProduction ? { serverPath: Path.join(__dirname, "node_modules/node-global-key-listener/bin/WinKeyServer.exe") } : {};
-const keyListener = new GlobalKeyboardListener({ windows: windowsOptions });
+const windowsOptions = isProduction ? { serverPath: Path.join(__dirname, "node_modules/@futpib/node-global-key-listener/bin/WinKeyServer.exe") } : {};
+const linuxOptions = isProduction ? { serverPath: Path.join(__dirname, "node_modules/@futpib/node-global-key-listener/bin/X11KeyServer") } : {};
 const modifiers = ["META", "CTRL", "ALT", "SHIFT"];
 const separator = " + ";
 const boundKeys = {};
+let keyListener = null;
 
 const actions = {
   loadSavefile: () => fileUtils.loadSavefile(),
@@ -54,6 +55,7 @@ function keybindHandler(event, down) {
 }
 
 export function initKeyListener(): void {
+  keyListener = new GlobalKeyboardListener({ windows: windowsOptions, x11: linuxOptions });
   keyListener.addListener(keybindHandler);
 }
 

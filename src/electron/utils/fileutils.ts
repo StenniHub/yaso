@@ -13,17 +13,30 @@ declare const __static: string;
 const homeDir = homedir();
 const portablePath = process.env.PORTABLE_EXECUTABLE_DIR;
 const isPortable = portablePath != null;
-const basePath = isPortable ? path.join(portablePath, "YASO") : path.join(homeDir, "Documents", "YASO");
+const isWindows = process.platform === "win32";
+const sep = isWindows ? "\\" : "/";  // TODO: Just use path.join consistently in here
+const basePath = getBasePath();
 const configPath = path.join(basePath, "config");
 const imagesPath = path.join(basePath, "images");
 
 const useSeparateWavPlayer = false;
-const soundProcess = initSoundProcess();
+
+let soundProcess = null;
 let activeSoundFile = null;
+
+function getBasePath() {
+  if (isPortable) return path.join(portablePath, "YASO");
+  if (isWindows) return path.join(homeDir, "Documents", "YASO");
+  return path.join(homeDir, "YASO");
+}
 
 export function initFolders(): void {
   const folders = [basePath, configPath, imagesPath];
-  folders.filter(notExists).forEach(fs.mkdirSync);
+  folders.filter(notExists).forEach(mkdir);
+}
+
+function mkdir(path: string): void {
+  fs.mkdirSync(path, 0o777);
 }
 
 export function readDir(path: string): FileObject[] {
@@ -31,7 +44,7 @@ export function readDir(path: string): FileObject[] {
   path = toAbsolutePath(path);
 
   fs.readdirSync(path, { withFileTypes: true }).forEach(file => {
-    const filePath = path + "\\" + file.name;
+    const filePath = path + sep + file.name;
     files.push(new FileObject(file.name, filePath, file.isDirectory()));
   })
 
@@ -103,7 +116,7 @@ export function loadSavefile(): void {
   const game = getSelectedGame();
 
   if (isWritable(game.savefile)) {
-    copyFile(game.selected.folder + "\\" + game.selected.file, game.savefile);
+    copyFile(game.selected.folder + sep + game.selected.file, game.savefile);
   } else {
     sendErrorMessage("Savefile is read only");
   }
@@ -111,7 +124,7 @@ export function loadSavefile(): void {
 
 export function createFolder(path: string): void {
   path = toAbsolutePath(path);
-  fs.mkdirSync(path);
+  mkdir(path);
 }
 
 export function rename(fromPath: string, toPath: string): void {
@@ -188,7 +201,7 @@ function toRelativePath(path: string): string {
 
   if (isPortable && path.includes(portablePath)) {
     path = path.replaceAll(portablePath, "");
-    if (path === "") return "\\";
+    if (path === "") return sep;
   }
 
   return path;
@@ -202,7 +215,7 @@ function toAbsolutePath(path: string) {
     path = path.replace("%userprofile%", homeDir);
   }
 
-  if (isPortable && path.startsWith("\\")) {
+  if (isPortable && path.startsWith(sep)) {
     path = portablePath + path;
   }
 
@@ -215,8 +228,8 @@ function getSelectedGame() {
   return games[session.game];
 }
 
-function initSoundProcess() {
-  const soundProcess = spawn("powershell.exe");
+export function initSoundProcess() {
+  soundProcess = spawn("powershell.exe");
 
   soundProcess.stderr.on("data", function(data) {
     console.log("Sound Process: " + data);
@@ -227,8 +240,6 @@ function initSoundProcess() {
   if (useSeparateWavPlayer) {
     soundProcess.stdin.write('$WAV_PLAYER = New-Object Media.SoundPlayer\n');  // Might be slightly faster for WAV files, but increases memory consumption
   }
-
-  return soundProcess;
 }
 
 function playSoundProcess(filePath: string) {

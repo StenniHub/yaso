@@ -59,7 +59,7 @@
 
 <script lang="ts">
 import { mapActions, mapState } from "vuex";
-import { ipcRenderer, invoke } from "@/vue/utils/ipcUtils";
+import { sep, ipcRenderer, invoke } from "@/vue/utils/ipcUtils";
 import ConfirmDialog from "./ConfirmDialog.vue";
 import IconButton from "./IconButton.vue";
 import Folder from "./Folder.vue";
@@ -81,7 +81,7 @@ export default {
       return this.session && this.session.useProfiles;
     },
     path(): string {
-      return this.getProfile() ? this.game.backups + "\\" + this.profile : this.game.backups;
+      return this.getProfile() ? this.game.backups + sep + this.profile : this.game.backups;
     },
     isSelected(): boolean {
       return false;  // Cannot select root folder
@@ -109,7 +109,7 @@ export default {
         fileDialog: {
           header: "Import savefile",
           inputs: {
-            file: { type: 'text', label: 'Name of file', default: this.game.savefile && this.game.savefile.split("\\").pop() }
+            file: { type: 'text', label: 'Name of file', default: this.game.savefile && this.game.savefile.split(sep).pop() }
           }
         },
         settingsDialog: {
@@ -185,7 +185,7 @@ export default {
         if (output == null || output.profile == null) return;
 
         const profile = output.profile;
-        const profilePath = this.game.backups + "\\" + profile
+        const profilePath = this.game.backups + sep + profile
         invoke("createFolder", profilePath).then(() => {
           this.profiles.push(profile);
           this.profiles.sort();
@@ -209,7 +209,7 @@ export default {
       this.$refs.folderDialog[0].open().then(output => {
         if (output == null || output.folder == null) return;
 
-        const folderPath = (this.game.selected.folder || this.path) + "\\" + output.folder;
+        const folderPath = (this.game.selected.folder || this.path) + sep + output.folder;
         invoke("createFolder", folderPath).then(this.refreshSelected);
       });
     },
@@ -217,7 +217,7 @@ export default {
       this.$refs.fileDialog[0].open().then(output => {
         if (output == null) return;
 
-        const backupPath = (this.game.selected.folder || this.path) + "\\" + output.file;
+        const backupPath = (this.game.selected.folder || this.path) + sep + output.file;
         invoke("copyFile", this.game.savefile, backupPath).then(this.refreshSelected);
       });
     },
