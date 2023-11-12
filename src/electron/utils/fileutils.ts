@@ -200,7 +200,7 @@ function toRelativePath(path: string): string {
   }
 
   if (isPortable && path.includes(portablePath)) {
-    path = path.replaceAll(portablePath, "");
+    path = path.replace(portablePath, "");
     if (path === "") return sep;
   }
 

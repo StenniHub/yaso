@@ -7,7 +7,7 @@ module.exports = {
       rendererProcessFile: "src/electron/renderer.ts",
       mainProcessWatch: ["src/electron/**/*.ts", "src/common/**/*.ts"],
       nodeIntegration: false,
-      externals: ["@futpib/node-global-key-listener"],
+      externals: ["node-global-key-listener"],
       builderOptions: {
         extraResources: [],
         win: {

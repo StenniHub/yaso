@@ -126,7 +126,6 @@ function initApp(): void {
   ipcMain.handle("readConfig", (event: IpcMainInvokeEvent, filename: string) => fileUtils.readConfig(filename));
   ipcMain.handle("saveConfig", (event: IpcMainInvokeEvent, filename: string, content: Record<string, unknown>) => fileUtils.saveConfig(filename, content));
 
-  ipcMain.handle("awaitKeys", () => keyUtils.awaitKeys());
   ipcMain.handle("unbindKeys", (event: IpcMainInvokeEvent, keys: string) => keyUtils.unbind(keys));
   ipcMain.handle("bindKeys", (event: IpcMainInvokeEvent, keybind: Record<string, unknown>) => keyUtils.bind(keybind));
 

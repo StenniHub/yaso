@@ -43,6 +43,38 @@ function deselectElement() {
   if (document.activeElement instanceof HTMLElement) (document.activeElement as HTMLElement).blur();
 }
 
+async function awaitKeys() {
+  const keys = new Set();
+  return new Promise((resolve) => {
+    const addKey = (e) => keys.add(e.key);
+    const returnKeys = () => {
+      document.removeEventListener('keydown', addKey);
+      document.removeEventListener('keyup', returnKeys);
+
+      let keyCombination = "";  // Fixed order of modifiers + other characters alphabetically sorted
+      const modifiers = ["Meta", "Control", "Alt", "Shift"];
+      for (const modifier of modifiers) {
+        if (keys.has(modifier)) {
+          keys.delete(modifier);
+          keyCombination += modifier + " + ";
+        }
+      }
+
+      if (keys.size == 0) {
+        invoke("errorMsg", "Key combination cannot only contain modifier keys");
+        resolve(null);
+      }
+
+      const sortedKeys = Array.from(keys).sort();
+      keyCombination += sortedKeys.join(" + ");
+      resolve(keyCombination);
+    }
+
+    document.addEventListener('keydown', addKey);
+    document.addEventListener('keyup', returnKeys);
+  });
+}
+
 export default {
   components: { IconButton, ConfirmDialog },
   data: (): Record<string, unknown> => ({
@@ -56,9 +88,7 @@ export default {
   },
   methods: {
     bind(keybind: Record<string, unknown>): void {
-      invoke("awaitKeys").then(keys => {
-        if (keybind.keys == keys) return;
-
+      awaitKeys().then(keys => {
         if (this.isBound(keys)) {
           invoke("errorMsg", keys + " is already bound to a different action");
           return;
