@@ -3,7 +3,6 @@ import path from "path";
 import { dialog, shell } from "electron";
 import { homedir } from "os";
 import { FileObject } from "@/common/files";
-import trash from "trash";
 import { exec, spawn } from "child_process";
 import { sendSuccessMessage, sendErrorMessage } from "./messageUtils";
 
@@ -135,13 +134,7 @@ export function rename(fromPath: string, toPath: string): void {
 
 export async function remove(path: string): Promise<void> {
   path = toAbsolutePath(path);
-
-  if (isPortable && !path.startsWith("C:\\")) {
-    fs.rmSync(path, { recursive: true });  // Trash does not seem to work on a USB stick
-    return;
-  }
-
-  await trash(path);
+  await shell.trashItem(path);
 }
 
 export function revealInExplorer(path: string): void {
