@@ -5,7 +5,7 @@
       <v-toolbar-title>Yet Another Save Organizer</v-toolbar-title>
       <div class="frame-buttons"> <!-- TODO: Add proper button styling -->
         <v-btn text @click="toggleAlwaysOnTop">
-          <v-icon dense :color="session && session.alwaysOnTop ? 'orange' : 'white'">mdi-pin</v-icon>
+          <v-icon dense :color="session?.alwaysOnTop?.enabled ? 'orange' : 'white'">mdi-pin</v-icon>
         </v-btn>
         <v-btn text @click="minimize">
           <v-icon dense>mdi-minus</v-icon>

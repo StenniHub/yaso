@@ -78,7 +78,7 @@ export default {
       return this.$route.params.id;
     },
     useProfiles(): boolean {
-      return this.session && this.session.useProfiles;
+      return this.session?.useProfiles;
     },
     path(): string {
       return this.getProfile() ? this.game.backups + "\\" + this.profile : this.game.backups;
