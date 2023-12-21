@@ -12,6 +12,15 @@
 
       <v-row class="settings-row">
         <v-col cols="4">
+          <v-text-field outlined ref="aotOpacity" v-model.number="modified.alwaysOnTop.opacity" :rules="[opacity => opacity >= 0.1 && opacity <= 1.0]" />
+        </v-col>
+        <v-col>
+          <p>Always on top opacity (0.1-1.0)</p>
+        </v-col>
+      </v-row>
+
+      <v-row class="settings-row">
+        <v-col cols="4">
           <v-checkbox v-model.number="modified.useProfiles" />
         </v-col>
         <v-col>

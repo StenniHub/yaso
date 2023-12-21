@@ -24,6 +24,13 @@ export function applyMigrations(): void {
     }
   }
 
+  if (parsedVersion < 151) {
+    session.alwaysOnTop = {
+      enabled: session.alwaysOnTop,
+      opacity: 0.8
+    }
+  }
+
   session.version = version;
   fileUtils.saveConfig("session", session);
 }

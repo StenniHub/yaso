@@ -145,7 +145,8 @@ function initApp(): void {
   ipcMain.handle("closeWindow", () => window.close());
   ipcMain.handle("alwaysOnTop", (event: IpcMainInvokeEvent, enabled: boolean) => {
     window.setAlwaysOnTop(enabled, "pop-up-menu");
-    window.setOpacity(enabled ? 0.8 : 1.0);  // TODO: Make opacity user configurable
+    const aotOpacity = fileUtils.readConfig("session").alwaysOnTop.opacity;
+    window.setOpacity(enabled ? aotOpacity : 1.0);
   });
   // End IPC handlers
 }

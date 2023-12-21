@@ -27,7 +27,7 @@ export default new Vuex.Store({
       state.session = session;
     },
     setAlwaysOnTop(state, value) {
-      Vue.set(state.session, "alwaysOnTop", value);
+      Vue.set(state.session.alwaysOnTop, "enabled", value);
     },
     setSelected(state, { folder, file }) {
       state.game.selected.folder = folder;
@@ -73,9 +73,9 @@ export default new Vuex.Store({
       invoke("saveConfig", "games", state.games);
     },
     toggleAlwaysOnTop({ state, commit }) {
-      commit("setAlwaysOnTop", !state.session.alwaysOnTop);
+      commit("setAlwaysOnTop", !state.session.alwaysOnTop.enabled);
       invoke("saveConfig", "session", state.session);
-      invoke("alwaysOnTop", state.session.alwaysOnTop);
+      invoke("alwaysOnTop", state.session.alwaysOnTop.enabled);
     },
     saveGames({ state }) {
       invoke("saveConfig", "games", state.games);
@@ -86,7 +86,7 @@ export default new Vuex.Store({
     setSession({ commit }, { session, save }) {
       commit("setSession", session);
       if (save) invoke("saveConfig", "session", session);
-      if (session.alwaysOnTop) invoke("alwaysOnTop", true);
+      if (session.alwaysOnTop.enabled) invoke("alwaysOnTop", true);
       window.webFrame.setZoomFactor(session.zoom);
     }
   },
