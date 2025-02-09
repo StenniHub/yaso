@@ -1,11 +1,6 @@
-<template>
-    <div></div>
-</template>
-
 <script lang="ts">
 import File from "./File.vue";
-import Folder from "./Folder.vue";
-import { FileResult, FolderResult } from "@/common/files";
+import { FolderResult } from "@/common/files";
 import { invoke } from "@/vue/utils/ipcUtils";
 import { mapState, mapMutations } from "vuex";
   
@@ -105,9 +100,6 @@ export default {
     },
     onEvent(action: string) {
       if (action === "refresh") this.refresh();
-    },
-    getFileComponent(file: FileResult) {
-      return file.isFolder ? Folder : File;
     }
   },
   mounted(): void {
