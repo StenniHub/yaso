@@ -40,6 +40,8 @@
     <v-container v-if="validSettings" id="root-folder">
       <draggable v-bind="draggableProps" v-on="draggableHandlers">
         <folder ref="file" v-for="file in folders" :key="file.name" :dir="path" :folders="file.folders" :files="file.files" @parent="onEvent" />
+      </draggable>
+      <draggable v-bind="draggableProps" v-on="draggableHandlers">
         <file ref="file" v-for="file in files" :key="file.name" :dir="path" @parent="onEvent" />
       </draggable>
     </v-container>

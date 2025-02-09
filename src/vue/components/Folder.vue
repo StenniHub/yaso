@@ -3,10 +3,17 @@
     <file-button ref="fileButton" @click="() => select(false)" :name="name" :icon="icon" :is-selected="isSelected" :contextOptions="contextOptions" />
 
     <!-- Would prefer v-show here but causes files to be selectable when not visible -->
-    <draggable v-if="isOpen" class="folder-content" :class="{ dragging: dragging }" v-bind="draggableProps" v-on="draggableHandlers">
-      <folder ref="file" v-for="file in folders" :key="file.name" :dir="path" :folders="file.folders" :files="file.files" @parent="onEvent" />
-      <file ref="file" v-for="file in files" :key="file.name" :dir="path" @parent="onEvent" />
-    </draggable>
+    <div v-if="isOpen" class="folder-content" :class="{ dragging: dragging }">
+      <draggable v-bind="draggableProps" v-on="draggableHandlers">
+        <folder ref="file" v-for="file in folders" :key="file.name" :dir="path" :folders="file.folders" :files="file.files" @parent="onEvent" />
+      </draggable>
+
+      <draggable v-bind="draggableProps" v-on="draggableHandlers">
+        <file ref="file" v-for="file in files" :key="file.name" :dir="path" @parent="onEvent" />
+      </draggable>
+    </div>
+
+
 
     <!-- TODO: Have these inside file button and trigger from outside? -->
     <confirm-dialog ref="renameDialog" :inputs="{ name: { type: 'text', label: 'Name of folder', default: name } }" />
