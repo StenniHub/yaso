@@ -26,7 +26,6 @@
         </v-list>
       </v-menu>
 
-
       <v-btn icon @click="editSettings">
         <v-icon>mdi-cog</v-icon>
       </v-btn>
@@ -40,7 +39,8 @@
 
     <v-container v-if="validSettings" id="root-folder">
       <draggable v-bind="draggableProps" v-on="draggableHandlers">
-        <component ref="file" v-for="file in files" :is="getFileComponent(file)" :key="file.name" :dir="path" @parent="onEvent" />
+        <folder ref="file" v-for="file in folders" :key="file.name" :dir="path" :folders="file.folders" :files="file.files" @parent="onEvent" />
+        <file ref="file" v-for="file in files" :key="file.name" :dir="path" @parent="onEvent" />
       </draggable>
     </v-container>
 
@@ -62,12 +62,14 @@ import { mapActions, mapState } from "vuex";
 import { ipcRenderer, invoke } from "@/vue/utils/ipcUtils";
 import ConfirmDialog from "./ConfirmDialog.vue";
 import IconButton from "./IconButton.vue";
-import Folder from "./Folder.vue";
+import FolderBase from "./FolderBase.vue";
 import Draggable from "vuedraggable";
+import File from "./File.vue";
+import Folder from "./Folder.vue";
 
 export default {
-  components: { ConfirmDialog, IconButton, Draggable },
-  mixins: [Folder],  // Makes the game view act as a root folder, but with overriden template and logic
+  components: { ConfirmDialog, IconButton, Draggable, File, Folder},
+  mixins: [FolderBase],  // Makes the game view act as a root folder, but with overriden template and logic
   data: (): Record<string, unknown> => ({
     profiles: [],
     profile: null,
@@ -123,7 +125,9 @@ export default {
     ...mapState({
       game: state => state["game"],
       images: state => state["images"],
-      session: state => state["session"]
+      session: state => state["session"],
+      files: state => state["root"]?.files || [],
+      folders: state => state["root"]?.folders || []
     })
   },
   methods: {
@@ -135,7 +139,7 @@ export default {
       this.refresh().then(() => {
         if (!this.useProfiles) return;
 
-        this.profiles = this.files.filter(file => file.isFolder).map(folder => folder.name);
+        this.profiles = this.folders.map(folder => folder.name);
         this.selectProfile(selectedProfile);  // Re-select profile after refresh
       });
     },

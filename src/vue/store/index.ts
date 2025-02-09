@@ -4,9 +4,11 @@ import { invoke } from "@/vue/utils/ipcUtils";
 
 Vue.use(Vuex);
 
+// TODO: Rewrite to support typing (createStore + interface?)
 export default new Vuex.Store({
   state: {
     game: null,
+    root: null,
     games: {},
     images: {},
     session: null,
@@ -16,6 +18,29 @@ export default new Vuex.Store({
     setGame(state, id: string) {
       state.game = id != null ? state.games[id] : null;
       state.session.game = id;
+      state.root = null;
+    },
+    addFolder(state, { path, result }) {
+      let root = state.root;
+      if (root == null) {
+        state.root = result;
+        return;
+      }
+
+      // Will this be a reliable way to get the relative path?
+      let subFolders = path.split("\\");
+      const rootName = root.path.split("\\").pop();
+      const rootIndex = subFolders.indexOf(rootName);
+      subFolders = subFolders.slice(rootIndex + 1);
+      
+      for (const folderName of subFolders) {
+        root = root.folders.find(f => f.name == folderName);
+      }
+
+      if (root) {  // TODO: Can we replace the whole element in place?
+        root.files = result.files;
+        root.folders = result.folders;
+      }
     },
     setGames(state, games: Record<string, unknown>) {
       state.games = games;

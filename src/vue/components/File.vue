@@ -17,6 +17,7 @@ import ConfirmDialog from "./ConfirmDialog.vue";
 
 // Uses Vue.extend so we can refer to the component type and load dynamically
 const File = Vue.extend({
+  name: "file",
   components: { FileButton, ConfirmDialog },
   props: {
     dir: String

@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import { dialog, shell } from "electron";
 import { homedir } from "os";
-import { FileObject } from "@/common/files";
+import { FileResult, FolderResult } from "@/common/files";
 import trash from "trash";
 import { exec, spawn } from "child_process";
 import { sendSuccessMessage, sendErrorMessage } from "./messageUtils";
@@ -26,16 +26,17 @@ export function initFolders(): void {
   folders.filter(notExists).forEach(fs.mkdirSync);
 }
 
-export function readDir(path: string): FileObject[] {
-  const files: FileObject[] = [];
+export function readDir(path: string): FolderResult {
   path = toAbsolutePath(path);
+  const result = new FolderResult(path.split("\\")[-1], path);
 
   fs.readdirSync(path, { withFileTypes: true }).forEach(file => {
     const filePath = path + "\\" + file.name;
-    files.push(new FileObject(file.name, filePath, file.isDirectory()));
+    if (file.isDirectory()) result.folders.push(new FolderResult(file.name, filePath));
+    else result.files.push(new FileResult(file.name, filePath));
   })
 
-  return files;
+  return result;
 }
 
 export function readBaseConfig(filename: string): Record<string, any> {
